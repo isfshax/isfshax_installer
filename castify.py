@@ -4,8 +4,8 @@ import sys, os, struct
 import __future__
 
 from base64 import b16decode
-from Crypto.Cipher import AES
-from Crypto.Hash import SHA
+from Cryptodome.Cipher import AES
+from Cryptodome.Hash import SHA
 
 #To get the IV: Compile dimok789/FIX94's iosuhax, copy them out of scripts/keys.py.
 #make sure to capitalise all the letters
