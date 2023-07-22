@@ -6,7 +6,9 @@ ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
 endif
 
-include $(DEVKITARM)/ds_rules
+include $(DEVKITARM)/base_rules
+
+GCC_VERSION := $(shell $(CC) -dumpversion)
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
@@ -51,7 +53,7 @@ CXXFLAGS		:=	$(CFLAGS) -fno-rtti -fno-exceptions
 
 ASFLAGS			:=	-g $(ARCH)
 LDFLAGS			 =	-nostartfiles -g --specs=../stub.specs $(ARCH) -Wl,--gc-sections,-Map,$(TARGET).map \
-					-L$(DEVKITARM)/lib/gcc/arm-none-eabi/5.3.0/be -L$(DEVKITARM)/arm-none-eabi/lib/be
+					-L$(DEVKITARM)/lib/gcc/arm-none-eabi/$(GCC_VERSION)/be -L$(DEVKITARM)/arm-none-eabi/lib/be
 
 LIBS			:=
 
@@ -141,6 +143,8 @@ $(OUTPUT)-strip.elf: $(OUTPUT).elf
 	$(STRIP) $< -o $@
 
 $(OUTPUT).elf: $(OFILES)
+	$(SILENTMSG) linking $(notdir $@)
+	$(SILENTCMD)$(LD)  $(LDFLAGS) $(OFILES) $(LIBPATHS) $(LIBS) -o $@
 
 $(ELFLOADER):
 	@$(MAKE) -C $(ROOTDIR)/arm-elfloader
