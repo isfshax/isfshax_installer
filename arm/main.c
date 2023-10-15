@@ -45,7 +45,6 @@ void NORETURN _main(void* base) {
     mem_initialize();
     irq_initialize();
     crypto_initialize();
-    nand_initialize();
 
     int res;
     do {
@@ -56,6 +55,25 @@ void NORETURN _main(void* base) {
             udelay(1000000);
         }
     } while(res);
+
+    if (crypto_check_de_Fused()) {
+        //console_power_to_continue();
+
+        printf("Console is de_Fused! Loading sdmc:/otp.bin...\n");
+        FILE* otp_file = fopen("sdmc:/otp.bin", "rb");
+        if (otp_file)
+        {
+            fread(&otp, sizeof(otp), 1, otp_file);
+            fclose(otp_file);
+        }
+        else {
+            printf("Failed to load `sdmc:/otp.bin`!\nInstaller can't work without otp\n");
+            panic(0);
+        }
+    }
+    
+    nand_initialize();
+
     smc_get_events();
     smc_set_odd_power(false);
 

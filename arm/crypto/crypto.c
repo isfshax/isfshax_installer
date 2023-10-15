@@ -24,6 +24,7 @@
 
 otp_t otp;
 seeprom_t seeprom;
+int crypto_otp_is_de_Fused = 0;
 
 void crypto_read_otp(void)
 {
@@ -49,4 +50,35 @@ void crypto_initialize(void)
     crypto_read_otp();
     crypto_read_seeprom();
     crc32_make_table();
+}
+
+int crypto_check_de_Fused()
+{
+    if (crypto_otp_is_de_Fused) {
+        return crypto_otp_is_de_Fused;
+    }
+
+    int has_jtag = 0;
+    int bytes_loaded = 0x3FF;
+
+    crypto_otp_is_de_Fused = 0;
+    u8* otp_iter = ((u8*)&otp) + sizeof(otp) - 5;
+    while (!(*otp_iter))
+    {
+        otp_iter--;
+        if (--bytes_loaded <= 0) {
+            break;
+        }
+    }
+
+    if (!otp.jtag_status) {
+        has_jtag = 1;
+    }
+
+    otp_iter = ((u8*)&otp);
+
+    if (bytes_loaded <= 0x90) {
+        crypto_otp_is_de_Fused = 1;
+    }
+    return crypto_otp_is_de_Fused;
 }
