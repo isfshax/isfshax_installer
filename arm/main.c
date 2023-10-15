@@ -44,12 +44,16 @@ void NORETURN _main(void* base) {
     irq_initialize();
     crypto_initialize();
     nand_initialize();
-    sdcard_init();
-    int res = ELM_Mount();
-    if (res) {
-        printf("SD Card mount error: %d\n", res);
-        panic(0);
-    }
+
+    int res;
+    do {
+        sdcard_init();
+        res = ELM_Mount();
+        if(res){
+            printf("SD Card mount error: %d\n", res);
+            udelay(1000000);
+        }
+    } while(res);
     smc_get_events();
     smc_set_odd_power(false);
 
