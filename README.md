@@ -2,7 +2,7 @@
 
 This installer allows the Installation and Removal of the [isfshax](https://github.com/isfshax/isfshax) superblock to/from the SLC.
 
-The installer searches for `superblock.img` [b]and[\b] `superblock.img.sha` on the SD. The install will fail if not both files are present.
+The installer searches for `superblock.img` **and** `superblock.img.sha` on the SD. The install will fail if not both files are present.
 
 ## launching the installer
 
