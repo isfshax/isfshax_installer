@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
+#include <video/gpu.h>
 #include "video/gfx.h"
 #include "video/console.h"
 #include "system/exception.h"
@@ -34,6 +35,7 @@
 #include "gui.h"
 
 void NORETURN _main(void* base) {
+    gpu_display_init();
     gfx_init();
     console_set_area(CONSOLE_DRC, 16, 16, DRC_WIDTH - 16, DRC_HEIGHT - 16);
     console_set_area(CONSOLE_TV, 16, 16, TV_WIDTH - 16, TV_HEIGHT - 16);

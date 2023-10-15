@@ -35,7 +35,22 @@ enum {
     GP_DEBUG5       = 0x200000,
     GP_DEBUG6       = 0x400000,
     GP_DEBUG7       = 0x800000,
+    GP_AV1_I2C_CLK  = 24,
+    GP_AV1_I2C_DAT  = 25,
 };
+
+enum {
+    GP2_FANSPEED        = 0,
+    GP2_SMC_I2C_CLK     = 1,
+    GP2_SMC_I2C_DAT     = 2,
+    GP2_DCDC2           = 3,
+    GP2_AVINTERRUPT     = 4,
+    GP2_CCRIO12         = 5,
+    GP2_AVRESET         = 6,
+};
+
+#define GPIO_DIR_IN  (0)
+#define GPIO_DIR_OUT (1)
 
 #define GP_DEBUG_SHIFT 16
 #define GP_DEBUG_MASK 0xFF0000
@@ -52,6 +67,15 @@ enum {
 #define GP_DEFAULT_ON (GP_AVE_SCL | GP_DCDC | GP_FAN)
 #define GP_ARM_DEFAULT_ON (GP_DEFAULT_ON & GP_OWNER_ARM)
 #define GP_PPC_DEFAULT_ON (GP_DEFAULT_ON & GP_OWNER_PPC)
+
+extern u8 test_read_serial;
+
+void gpio_enable(u16 gpio_id, u8 val);
+void gpio_set_dir(u16 gpio_id, u8 dir);
+
+void gpio_ave_i2c_init();
+void gpio_basic_set(u16 gpio_id, u8 val);
+void gpio2_basic_set(u16 gpio_id, u8 val);
 
 #endif
 
