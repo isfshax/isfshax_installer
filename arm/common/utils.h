@@ -211,4 +211,11 @@ type *name = (type*)(((u32)(_al__##name)) + ((alignment) - (( \
        __typeof__ (b) _b = (b); \
        _a < _b ? _a : _b; })
 
+#define min(a, b) \
+    ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+       _a < _b ? _a : _b; })
+
+#define BIT(n) (1<<n)
+
 #endif

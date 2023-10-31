@@ -230,5 +230,6 @@ void crypto_read_otp();
 
 void crypto_initialize();
 
+int crypto_check_de_Fused();
 
 #endif

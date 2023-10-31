@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
+#include <video/gpu.h>
 #include "video/gfx.h"
 #include "video/console.h"
 #include "system/exception.h"
@@ -34,6 +35,7 @@
 #include "gui.h"
 
 void NORETURN _main(void* base) {
+    gpu_display_init();
     gfx_init();
     console_set_area(CONSOLE_DRC, 16, 16, DRC_WIDTH - 16, DRC_HEIGHT - 16);
     console_set_area(CONSOLE_TV, 16, 16, TV_WIDTH - 16, TV_HEIGHT - 16);
@@ -43,13 +45,35 @@ void NORETURN _main(void* base) {
     mem_initialize();
     irq_initialize();
     crypto_initialize();
-    nand_initialize();
-    sdcard_init();
-    int res = ELM_Mount();
-    if (res) {
-        printf("SD Card mount error: %d\n", res);
-        panic(0);
+
+    int res;
+    do {
+        sdcard_init();
+        res = ELM_Mount();
+        if(res){
+            printf("SD Card mount error: %d\n", res);
+            udelay(1000000);
+        }
+    } while(res);
+
+    if (crypto_check_de_Fused()) {
+        //console_power_to_continue();
+
+        printf("Console is de_Fused! Loading sdmc:/otp.bin...\n");
+        FILE* otp_file = fopen("sdmc:/otp.bin", "rb");
+        if (otp_file)
+        {
+            fread(&otp, sizeof(otp), 1, otp_file);
+            fclose(otp_file);
+        }
+        else {
+            printf("Failed to load `sdmc:/otp.bin`!\nInstaller can't work without otp\n");
+            panic(0);
+        }
     }
+    
+    nand_initialize();
+
     smc_get_events();
     smc_set_odd_power(false);
 
