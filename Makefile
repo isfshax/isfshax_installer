@@ -123,7 +123,7 @@ clean:
 	@echo clean ...
 	@$(MAKE) -C $(ROOTDIR)/arm-elfloader clean
 	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT)-strip.elf
-	@rm -fr $(ROOTDIR)/fw.img
+	@rm -fr $(ROOTDIR)/ios.img
 
 
 #---------------------------------------------------------------------------------
@@ -136,7 +136,7 @@ DEPENDS		:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 ELFLOADER = $(ROOTDIR)/arm-elfloader/elfloader.bin
 
-$(ROOTDIR)/fw.img: $(OUTPUT)-strip.elf $(ELFLOADER)
+$(ROOTDIR)/ios.img: $(OUTPUT)-strip.elf $(ELFLOADER)
 	python3 $(ROOTDIR)/castify.py $(ELFLOADER) $< $@
 
 $(OUTPUT)-strip.elf: $(OUTPUT).elf

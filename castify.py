@@ -7,12 +7,13 @@ from base64 import b16decode
 from Cryptodome.Cipher import AES
 from Cryptodome.Hash import SHA
 
+no_crypto = True
+
 #To get the IV: Compile dimok789/FIX94's iosuhax, copy them out of scripts/keys.py.
 #make sure to capitalise all the letters
-key = b16decode(b"B5XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-iv = b16decode(b"91XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-
-no_crypto = False
+if not no_crypto:
+    key = b16decode(b"B5XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    iv = b16decode(b"91XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
 loaderfile = sys.argv[1]
 elffile = sys.argv[2]
