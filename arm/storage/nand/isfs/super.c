@@ -183,7 +183,7 @@ int isfs_find_super(isfs_ctx* ctx, u32 min_generation, u32 max_generation, u32 *
     {
         u32 cluster = CLUSTER_COUNT - (ctx->super_count - i) * ISFSSUPER_CLUSTERS;
 
-        if(isfs_read_volume(ctx, cluster, 1, 0, NULL, super))
+        if(isfs_read_volume(ctx, cluster, 1, 0, NULL, super)<0)
             continue;
 
         int cur_version = isfs_get_super_version(super);
