@@ -19,12 +19,16 @@
 #define ISFSHAX_GENERATION_FIRST    0xffff7fff
 #define ISFSHAX_GENERATION_RANGE    0x100
 
-#define ISFSHAX_BAD_SLOT            0x80
+typedef struct isfshax_slot{
+    bool bad : 1;
+    bool ecc_correctable : 1;
+    u8 slot : 6; 
+} PACKED isfshax_slot;
 
 typedef struct isfshax_info
 {
     u32 magic;
-    u8 slots[ISFSHAX_REDUNDANCY];
+    isfshax_slot slots[ISFSHAX_REDUNDANCY];
     u32 generation;
     u32 generationbase;
     u32 index;

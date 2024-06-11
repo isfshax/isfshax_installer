@@ -110,7 +110,7 @@ int install_isfshax(void)
 
         /* keep good slots, discard no longer usable bad slots */
         for (i = (ISFSHAX_REDUNDANCY - 1); i >= 0; i--)
-            if (!(isfshax.slots[i] & ISFSHAX_BAD_SLOT))
+            if (!(isfshax.slots[i].bad))
                 isfshax.slots[--needed_slots] = isfshax.slots[i];
     }
     else puts("Not found");
@@ -130,7 +130,7 @@ int install_isfshax(void)
 
         if (needed_slots > 0) {
             isfs_super_mark_bad_slot(slc, index);
-            isfshax.slots[--needed_slots] = index;
+            isfshax.slots[--needed_slots].slot = index;
             printf("Allocated slot %d for isfshax\n", index);
         }
         else good_slots++;
@@ -158,8 +158,8 @@ int install_isfshax(void)
         isfshax.index = i;
         memcpy(&s_isfshax.isfshax, &isfshax, sizeof(isfshax));
 
-        printf("Writing isfshax superblock to slot %d... ", (int)isfshax.slots[i]);
-        rc = isfs_write_super(slc, &s_isfshax, isfshax.slots[i]);
+        printf("Writing isfshax superblock to slot %d... ", (int)isfshax.slots[i].slot);
+        rc = isfs_write_super(slc, &s_isfshax, isfshax.slots[i].slot);
         if (rc >= 0) {
             puts("OK");
             isfshax_okay++;
@@ -207,7 +207,7 @@ int uninstall_isfshax(void)
     fat = isfs_get_fat(slc);
 
     for (i = 0; i < ISFSHAX_REDUNDANCY; i++) {
-        u32 slot = isfshax.slots[i] & ~ISFSHAX_BAD_SLOT;
+        u32 slot = isfshax.slots[i].slot;
         u32 block = BLOCK_COUNT - (slc->super_count - slot) * ISFSSUPER_BLOCKS;
         u32 cluster = block * BLOCK_CLUSTERS;
         u32 offs = 0;
@@ -217,7 +217,7 @@ int uninstall_isfshax(void)
         nand_erase_block(block+0);
         nand_erase_block(block+1);
 
-        if (isfshax.slots[i] & ISFSHAX_BAD_SLOT)
+        if (isfshax.slots[i].bad)
             continue;
 
         /* remove bad slot mark from good slots */

@@ -296,7 +296,6 @@ int nand_write_page(u32 pageno, void *data, void *spare)
 int nand_ecc_correct(u8 *data, u32 *ecc_save, u32 *ecc_calc, u32 size)
 {
     u32 syndrome;
-    u16 odd, even;
 
     /* check if the page contain ecc errors */
     if (!memcmp(ecc_save, ecc_calc, size)) {
@@ -315,14 +314,16 @@ int nand_ecc_correct(u8 *data, u32 *ecc_save, u32 *ecc_calc, u32 size)
         }
 
         /* calculate ecc syndrome */
-        syndrome = (ecc_save[i] ^ ecc_calc[i]) & 0x0fff0fff;
+        syndrome = (ecc_save[i] ^ ecc_calc[i]); // & 0x0fff0fff;
         if ((syndrome & (syndrome - 1)) == 0) {
             continue;
         }
 
         /* extract odd and even halves */
-        odd = syndrome >> 16;
-        even = syndrome;
+        //odd = syndrome >> 16;
+        //even = syndrome;
+        u16 even = (syndrome >> 24) | ((syndrome >> 8) & 0xf00);
+        u16 odd = ((syndrome << 8) & 0xf00) | ((syndrome >> 8) & 0x0ff);
 
         /* uncorrectable error */
         if ((odd ^ even) != 0xfff) {
