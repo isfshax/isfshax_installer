@@ -87,7 +87,7 @@ int install_isfshax(void)
     static isfshax_super s_isfshax = {0};
     isfs_ctx *slc = isfs_get_volume(ISFSVOL_SLC);
     int good_slots, needed_slots = ISFSHAX_REDUNDANCY, isfshax_okay = 0;
-    isfshax_info isfshax;
+    isfshax_info isfshax = { };
     int i, index, rc;
 
     puts("Loading and verifying crafted isfshax superblock");
@@ -224,6 +224,14 @@ int uninstall_isfshax(void)
         for (offs = 0; offs < ISFSSUPER_CLUSTERS; offs++)
             fat[cluster + offs] = FAT_CLUSTER_RESERVED;
     }
+
+    // Mark all superblocks good
+    // for(int slot=0; slot<slc->super_count; slot++){
+    //     u32 block = BLOCK_COUNT - (slc->super_count - slot) * ISFSSUPER_BLOCKS; 
+    //     u32 cluster = block * BLOCK_CLUSTERS;
+    //     for (u32 offs = 0; offs < ISFSSUPER_CLUSTERS; offs++)
+    //         fat[cluster + offs] = FAT_CLUSTER_RESERVED;
+    // }
 
     /* write two copies of the updated ISFS superblock, just to be sure */
     puts("Writing updated isfs superblock");
