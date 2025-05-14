@@ -87,7 +87,7 @@ static void main_uninstall(menu_t *menu) {
 
     puts("\e[2;0H\e[0J" "WANRING: Before Uninstalling ISFShax make sure the console boots correctly using\n"
         "the 'Patch ISFShax and boot IOS (slc)' option in minute\n"
-        "If your console can't boot coorectly, uninstalling ISFShax will BRICK the console!!!\n\n"
+        "If your console can't boot correctly, uninstalling ISFShax will BRICK the console!!!\n\n"
         "Uninstall isfshax now?");
     if (!ask_confirmation()) return;
 
