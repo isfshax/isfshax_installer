@@ -17,8 +17,9 @@
 #include "gfx.h"
 #include "gpu_init.h"
 #include "pll.h"
-//#include "minini.h"
+#include "minini.h"
 #include <string.h>
+#include <stdio.h>
 
 void* gpu_tv_primary_surface_addr(void) {
     return (void*)(abif_gpu_read32(D1GRPH_PRIMARY_SURFACE_ADDRESS) & ~4);
@@ -52,7 +53,7 @@ void gpu_test(void) {
 }
 
 void gpu_switch_endianness(void) {
-    if (read16(MEM_GPU_ENDIANNESS) & 3 == 1)
+    if ((read16(MEM_GPU_ENDIANNESS) & 3) == 1)
         return;
 
     abif_gpu_write32(0x8020, 0xFFFFFFFF);
