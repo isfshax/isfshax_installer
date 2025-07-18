@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <malloc.h>
+#include "video/gpu.h"
 #include "video/gfx.h"
+#include "video/console.h"
 #include "system/exception.h"
 #include "system/memory.h"
 #include "system/irq.h"
@@ -37,6 +39,12 @@ static menu_t m_main = {
 
 void gui_main() {
     int status = 0;
+    // ensure the display is initialized
+    gpu_display_init();
+    gfx_init();
+    console_init(CONSOLE_TV);
+    console_init(CONSOLE_DRC);
+
     puts("\e[H\e[J\e[36misfshax\e[0m installer");
     puts("\b\e[19D(c) 2021 rw-r-r-0644\n");
 
