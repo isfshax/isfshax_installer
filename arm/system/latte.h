@@ -11,6 +11,10 @@
 #ifndef _LATTE_H
 #define _LATTE_H
 
+#ifndef __ASSEMBLER__
+#include "common/types.h"
+#endif
+
 /*
  * Latte registers.
  * http://wiiubrew.org/wiki/Hardware/Latte_Registers
@@ -38,13 +42,13 @@
 #define LT_AHB_CPU_STATUS             (LT_REG_BASE + 0x054)
 #define LT_ERROR                      (LT_REG_BASE + 0x058)
 #define LT_ERROR_MASK                 (LT_REG_BASE + 0x05C)
-#define LT_MEMIRR                     (LT_REG_BASE + 0x060)
+#define LT_SRNPROT                    (LT_REG_BASE + 0x060)
 #define LT_AHBPROT                    (LT_REG_BASE + 0x064)
 #define LT_AVE_I2C_INT_MASK           (LT_REG_BASE + 0x068)
 #define LT_AVE_I2C_INT_STATE          (LT_REG_BASE + 0x06C)
 #define LT_EXICTRL                    (LT_REG_BASE + 0x070)
-#define LT_UNK074                     (LT_REG_BASE + 0x074)
-#define LT_UNK088                     (LT_REG_BASE + 0x088)
+#define LT_AIPIOCTRL                  (LT_REG_BASE + 0x074)
+#define LT_USBFRCRST                  (LT_REG_BASE + 0x088)
 
 #define LT_GPIOE_OUT                  (LT_REG_BASE + 0x0C0)
 #define LT_GPIOE_DIR                  (LT_REG_BASE + 0x0C4)
@@ -79,7 +83,7 @@
 #define LT_AHB_UNK138                 (LT_REG_BASE + 0x138)
 
 #define LT_ARB_CFG                    (LT_REG_BASE + 0x140)
-#define LT_DIFLAGS                    (LT_REG_BASE + 0x180)
+#define LT_COMPAT                     (LT_REG_BASE + 0x180)
 #define LT_RESETS_AHB                 (LT_REG_BASE + 0x184)
 #define LT_COMPAT_MEMCTRL_WORKAROUND  (LT_REG_BASE + 0x188)
 #define LT_BOOT0                      (LT_REG_BASE + 0x18C)
@@ -97,8 +101,10 @@
 #define LT_ACRCLK_STRENGTH_CTRL       (LT_REG_BASE + 0x1E8)
 #define LT_OTPCMD                     (LT_REG_BASE + 0x1EC)
 #define LT_OTPDATA                    (LT_REG_BASE + 0x1F0)
+#define LT_DBGPORT                    (LT_REG_BASE + 0x200)
 #define LT_UNK204                     (LT_REG_BASE + 0x204)
-#define LT_ASICREV_ACR                (LT_REG_BASE + 0x214)
+#define LT_WOOD_CHIPREVID             (LT_REG_BASE + 0x214)
+#define LT_DBGBUSRD                   (LT_REG_BASE + 0x218)
 #define LT_UNK224                     (LT_REG_BASE + 0x224)
 #define LT_AVE_I2C_CLOCK              (LT_REG_BASE + 0x250)
 #define LT_AVE_I2C_INOUT_DATA         (LT_REG_BASE + 0x254)
@@ -172,15 +178,15 @@
 #define LT_GPIO2_INMIR                (LT_REG_BASE + 0x558)
 #define LT_GPIO2_OWNER                (LT_REG_BASE + 0x55C)
 
-#define LT_I2C_CLOCK                  (LT_REG_BASE + 0x570)
-#define LT_I2C_INOUT_DATA             (LT_REG_BASE + 0x574)
-#define LT_I2C_INOUT_CTRL             (LT_REG_BASE + 0x578)
-#define LT_I2C_INOUT_SIZE             (LT_REG_BASE + 0x57C)
-#define LT_I2C_INT_MASK               (LT_REG_BASE + 0x580)
-#define LT_I2C_INT_STATE              (LT_REG_BASE + 0x584)
+#define LT_SMC_I2C_CLOCK              (LT_REG_BASE + 0x570)
+#define LT_SMC_I2C_INOUT_DATA         (LT_REG_BASE + 0x574)
+#define LT_SMC_I2C_INOUT_CTRL         (LT_REG_BASE + 0x578)
+#define LT_SMC_I2C_INOUT_SIZE         (LT_REG_BASE + 0x57C)
+#define LT_SMC_I2C_INT_MASK           (LT_REG_BASE + 0x580)
+#define LT_SMC_I2C_INT_STATE          (LT_REG_BASE + 0x584)
 
-#define LT_ASICREV_CCR                (LT_REG_BASE + 0x5A0)
-#define LT_DEBUG                      (LT_REG_BASE + 0x5A4)
+#define LT_CHIPREVID                  (LT_REG_BASE + 0x5A0)
+#define LT_SYSCFG1                    (LT_REG_BASE + 0x5A4)
 #define LT_COMPAT_MEMCTRL_STATE       (LT_REG_BASE + 0x5B0)
 #define LT_COMPAT_AHB_STATE           (LT_REG_BASE + 0x5B4)
 #define LT_COMPAT_STEREO_OUT_SELECT   (LT_REG_BASE + 0x5B8)
@@ -189,15 +195,14 @@
 #define LT_IOSTRENGTH_CTRL2           (LT_REG_BASE + 0x5C8)
 #define LT_UNK5CC                     (LT_REG_BASE + 0x5CC)
 #define LT_RESETS                     (LT_REG_BASE + 0x5E0)
-#define LT_RESETS_AHMN                (LT_REG_BASE + 0x5E4)
+#define LT_RESETS_AHMN                (LT_REG_BASE + 0x5E4) // 0x7DFF on reset
 #define LT_CLOCKGATE                  (LT_REG_BASE + 0x5E8)
 #define LT_SYSPLL_CFG                 (LT_REG_BASE + 0x5EC)
-#define LT_ABIF_CPLTL_OFFSET          (LT_REG_BASE + 0x620)
-#define LT_ABIF_CPLTL_DATA            (LT_REG_BASE + 0x624)
+#define LT_ABIF_OFFSET                (LT_REG_BASE + 0x620)
+#define LT_ABIF_DATA                  (LT_REG_BASE + 0x624)
 #define LT_UNK628                     (LT_REG_BASE + 0x628)
 #define LT_60XE_CFG                   (LT_REG_BASE + 0x640)
 #define LT_UNK660                     (LT_REG_BASE + 0x660)
-#define LT_UNK640                     (LT_REG_BASE + 0x640)
 #define LT_DCCMPT                     (LT_REG_BASE + 0x708)
 
 /*
@@ -214,7 +219,7 @@
 #define NAND_ECC            (NAND_REG_BASE + 0x014)
 #define NAND_BANK           (NAND_REG_BASE + 0x018)
 #define NAND_UNK1           (NAND_REG_BASE + 0x01C)
-#define NAND_BANK_CTRL      (NAND_REG_BASE + 0x030)
+#define NAND_UNK2           (NAND_REG_BASE + 0x030)
 #define NAND_UNK3           (NAND_REG_BASE + 0x040)
 
 /*
@@ -228,6 +233,15 @@
 #define AES_DEST            (AES_REG_BASE + 0x008)
 #define AES_KEY             (AES_REG_BASE + 0x00C)
 #define AES_IV              (AES_REG_BASE + 0x010)
+
+// AES second
+#define AESS_REG_BASE        (0x0D120000)
+
+#define AESS_CTRL            (AESS_REG_BASE + 0x000)
+#define AESS_SRC             (AESS_REG_BASE + 0x004)
+#define AESS_DEST            (AESS_REG_BASE + 0x008)
+#define AESS_KEY             (AESS_REG_BASE + 0x00C)
+#define AESS_IV              (AESS_REG_BASE + 0x010)
 
 /*
  * SHA-1 registers.
@@ -270,6 +284,18 @@
 #define EHCI2_REG_BASE      (0x0D140000)
 
 /*
+ * SI registers.
+ * http://wiiubrew.org/wiki/Hardware/Legacy#Serial_Interface
+ * http://hitmen.c02.at/files/yagcd/yagcd/chap5.html#sec5.8
+ */
+#define SI_REG_BASE        (0x0D806400)
+
+#define SI_C0OUTBUF         (SI_REG_BASE  + 0x000)
+#define SI_C1OUTBUF         (SI_REG_BASE  + 0x00C)
+#define SI_C2OUTBUF         (SI_REG_BASE  + 0x018)
+#define SI_C3OUTBUF         (SI_REG_BASE  + 0x024)
+
+/*
  * EXI registers.
  * http://wiiubrew.org/wiki/Hardware/Legacy#External_Interface
  */
@@ -298,23 +324,64 @@
 #define EXI2_CR             (EXI2_REG_BASE + 0x00C)
 #define EXI2_DATA           (EXI2_REG_BASE + 0x010)
 
+//#define EXI_UNK_PPC_PVR     (EXI_REG_BASE + )
+
 /*
  * Memory Controller registers.
  * http://wiiubrew.org/wiki/Hardware/Memory_Controller
  */
 #define MEM_REG_BASE        (0x0D8B4000)
 
-#define MEM_PROT            (MEM_REG_BASE + 0x20A)
-#define MEM_PROT_START      (MEM_REG_BASE + 0x20C)
-#define MEM_PROT_END        (MEM_REG_BASE + 0x20E)
-#define MEM_REFRESH_FLAG    (MEM_REG_BASE + 0x226)
-#define MEM_FLUSH_MASK      (MEM_REG_BASE + 0x228)
-#define MEM_FLUSH_ACK       (MEM_REG_BASE + 0x22A)
-#define MEM_SEQ_REG_VAL     (MEM_REG_BASE + 0x2C4)
-#define MEM_SEQ_REG_ADDR    (MEM_REG_BASE + 0x2C6)
-#define MEM_SEQ0_REG_VAL    (MEM_REG_BASE + 0x300)
-#define MEM_SEQ0_REG_ADDR   (MEM_REG_BASE + 0x302)
-#define MEM_GPU_ENDIANNESS  (MEM_REG_BASE + 0x64A)
+#define MEM_COMPAT              (MEM_REG_BASE + 0x200)
+#define MEM_PROT                (MEM_REG_BASE + 0x20A)
+#define MEM_PROT_START          (MEM_REG_BASE + 0x20C)
+#define MEM_PROT_END            (MEM_REG_BASE + 0x20E)
+#define MEM_COLSEL              (MEM_REG_BASE + 0x210)
+#define MEM_ROWSEL              (MEM_REG_BASE + 0x212)
+#define MEM_BANKSEL             (MEM_REG_BASE + 0x214)
+#define MEM_RANKSEL             (MEM_REG_BASE + 0x216)
+#define MEM_COLMSK              (MEM_REG_BASE + 0x218)
+#define MEM_ROWMSK              (MEM_REG_BASE + 0x21A)
+#define MEM_BANKMSK             (MEM_REG_BASE + 0x21C)
+#define MEM_REFRESH_FLAG        (MEM_REG_BASE + 0x226)
+#define MEM_FLUSH_MASK          (MEM_REG_BASE + 0x228)
+#define MEM_FLUSH_ACK           (MEM_REG_BASE + 0x22A)
+#define MEM_SEQRD_HWM           (MEM_REG_BASE + 0x268)
+#define MEM_SEQWR_HWM           (MEM_REG_BASE + 0x26A)
+#define MEM_SEQCMD_HWM          (MEM_REG_BASE + 0x26C)
+#define MEM_CPUAHM_WR_T         (MEM_REG_BASE + 0x26E)
+#define MEM_DMAAHM_WR_T         (MEM_REG_BASE + 0x270)
+#define MEM_DMAAHM0_WR_T        (MEM_REG_BASE + 0x272)
+#define MEM_DMAAHM1_WR_T        (MEM_REG_BASE + 0x274)
+#define MEM_PI_WR_T             (MEM_REG_BASE + 0x276)
+#define MEM_PE_WR_T             (MEM_REG_BASE + 0x278)
+#define MEM_IO_WR_T             (MEM_REG_BASE + 0x27A)
+#define MEM_DSP_WR_T            (MEM_REG_BASE + 0x27C)
+#define MEM_ACC_WR_T            (MEM_REG_BASE + 0x27E)
+#define MEM_ARB_MAXWR           (MEM_REG_BASE + 0x280)
+#define MEM_ARB_MINRD           (MEM_REG_BASE + 0x282)
+#define MEM_PROF_CPUAHM         (MEM_REG_BASE + 0x284)
+#define MEM_PROF_CPUAHM0        (MEM_REG_BASE + 0x286)
+#define MEM_RDPR_PI             (MEM_REG_BASE + 0x2A6)
+#define MEM_ARB_MISC            (MEM_REG_BASE + 0x2B6)
+#.define MEM_WRMUX               (MEM_REG_BASE + 0x2BA)
+#define MEM_ARB_EXADDR          (MEM_REG_BASE + 0x2C0)
+#define MEM_ARB_EXCMD           (MEM_REG_BASE + 0x2C2)
+#define MEM_SEQ_REG_VAL         (MEM_REG_BASE + 0x2C4)
+#define MEM_SEQ_REG_ADDR        (MEM_REG_BASE + 0x2C6)
+
+// Wii U added
+#define MEM_EDRAM_REFRESH_CTRL  (MEM_REG_BASE + 0x2CC)
+#define MEM_EDRAM_REFRESH_VAL   (MEM_REG_BASE + 0x2CE)
+#define MEM_UNK_2D0             (MEM_REG_BASE + 0x2D0)
+#define MEM_UNK_2D2             (MEM_REG_BASE + 0x2D2)
+#define MEM_MEM1_COMPAT_MODE    (MEM_REG_BASE + 0x2D4)
+#define MEM_CAFE_DDR_RANGE_TOP  (MEM_REG_BASE + 0x2D6)
+#define MEM_SEQ0_REG_VAL        (MEM_REG_BASE + 0x300)
+#define MEM_SEQ0_REG_ADDR       (MEM_REG_BASE + 0x302)
+#define MEM_UNK_306             (MEM_REG_BASE + 0x306)
+#define MEM_GPU_ENDIANNESS      (MEM_REG_BASE + 0x64A)
+//#define MEM_BANKMSK             (MEM_REG_BASE + 0x)
 
 /*
  * AHMN registers.
@@ -322,20 +389,53 @@
  */
 #define AHMN_REG_BASE       (0x0D8B0800)
 
-#define AHMN_MEM0_CONFIG    (AHMN_REG_BASE + 0x000)
-#define AHMN_MEM1_CONFIG    (AHMN_REG_BASE + 0x004)
-#define AHMN_MEM2_CONFIG    (AHMN_REG_BASE + 0x008)
+#define AHMN_MEM0_CONFIG    (AHMN_REG_BASE + 0x000) // 0x08220800 on reset
+#define AHMN_MEM1_CONFIG    (AHMN_REG_BASE + 0x004) // 0x01001000 on reset
+#define AHMN_MEM2_CONFIG    (AHMN_REG_BASE + 0x008) // 0x80008000 on reset, mask 0xFF00FFFF
 #define AHMN_RDBI_MASK      (AHMN_REG_BASE + 0x00C)
-#define AHMN_ERROR_MASK     (AHMN_REG_BASE + 0x020)
+#define AHMN_ERROR_MASK     (AHMN_REG_BASE + 0x020) // cf3fffff mask
 #define AHMN_ERROR          (AHMN_REG_BASE + 0x024)
 #define AHMN_UNK40          (AHMN_REG_BASE + 0x040)
 #define AHMN_UNK44          (AHMN_REG_BASE + 0x044)
 #define AHMN_TRANSFER_STATE (AHMN_REG_BASE + 0x050)
 #define AHMN_WORKAROUND     (AHMN_REG_BASE + 0x054)
 
-#define AHMN_MEM0           (AHMN_REG_BASE + 0x100)
-#define AHMN_MEM1           (AHMN_REG_BASE + 0x200)
-#define AHMN_MEM2           (AHMN_REG_BASE + 0x400)
+#define AHMN_MEM0           (AHMN_REG_BASE + 0x100) // All 0x80000000 on reset
+#define AHMN_MEM1           (AHMN_REG_BASE + 0x200) // All 0x80000000 on reset
+#define AHMN_MEM2           (AHMN_REG_BASE + 0x400) // All 0x80000000 on reset
+
+// LT_CHIPREVID
+#define BSP_HARDWARE_VERSION_UNKNOWN                    (0x00000000)
+#define BSP_HARDWARE_VERSION_HOLLYWOOD_ENG_SAMPLE_1     (0x00000001)
+#define BSP_HARDWARE_VERSION_HOLLYWOOD_ENG_SAMPLE_2     (0x10000001)
+#define BSP_HARDWARE_VERSION_HOLLYWOOD_PROD_FOR_WII     (0x10100001)
+#define BSP_HARDWARE_VERSION_HOLLYWOOD_CORTADO          (0x10100008)
+#define BSP_HARDWARE_VERSION_HOLLYWOOD_CORTADO_ESPRESSO (0x1010000C)
+#define BSP_HARDWARE_VERSION_BOLLYWOOD                  (0x20000001)
+#define BSP_HARDWARE_VERSION_BOLLYWOOD_PROD_FOR_WII     (0x20100001)
+
+#define BSP_HARDWARE_VERSION_LATTE_A11 (0x21100000)
+#define BSP_HARDWARE_VERSION_LATTE_A12 (0x21200000)
+#define BSP_HARDWARE_VERSION_LATTE_A2X (0x22100000)
+#define BSP_HARDWARE_VERSION_LATTE_A3X (0x23100000)
+#define BSP_HARDWARE_VERSION_LATTE_A4X (0x24100000)
+#define BSP_HARDWARE_VERSION_LATTE_A5X (0x25100000)
+#define BSP_HARDWARE_VERSION_LATTE_B1X (0x26100000)
+
+#define BSP_HARDWARE_VERSION_GROUP(x) ((x>>24) & 0xFF)
+#define BSP_HARDWARE_VERSION_GROUP_LATTE_A1X (0x21)
+#define BSP_HARDWARE_VERSION_GROUP_LATTE_A2X (0x22)
+#define BSP_HARDWARE_VERSION_GROUP_LATTE_A3X (0x23)
+#define BSP_HARDWARE_VERSION_GROUP_LATTE_A4X (0x24)
+#define BSP_HARDWARE_VERSION_GROUP_LATTE_A5X (0x25)
+#define BSP_HARDWARE_VERSION_GROUP_LATTE_B1X (0x26)
+
+#define BSP_HARDWARE_VERSION_EV   (0x10)
+#define BSP_HARDWARE_VERSION_EV_Y (0x11)
+#define BSP_HARDWARE_VERSION_CAT  (0x20)
+#define BSP_HARDWARE_VERSION_ID   (0x21)
+#define BSP_HARDWARE_VERSION_CAFE (0x28)
+#define BSP_HARDWARE_VERSION_IH   (0x29)
 
 #define NLCKB_EDRAM     (1<<26)
 #define RSTB_EDRAM      (1<<25)
@@ -364,5 +464,15 @@
 #define RSTB_MEMRSTB    (1<<2)
 #define CRSTB           (1<<1)
 #define RSTBINB         (1<<0)
+
+#define     LT_COMPAT_BOOT_CODE   0x100000
+
+#ifndef __ASSEMBLER__
+int latte_get_wood_hw_version(u32 *pOut);
+int latte_get_latte_hw_version(u32 *pOut);
+u32 latte_get_hw_version();
+void latte_set_iop_clock_mult(u8 val);
+void latte_print_hardware_info();
+#endif
 
 #endif
