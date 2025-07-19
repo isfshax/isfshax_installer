@@ -128,15 +128,15 @@ void gpu_display_init(void) {
     pll_vi1_write(&vi1_pllcfg);
     pll_vi2_write(&vi2_pllcfg);
 
-    gpu_do_init_list(gpu_init_entries_A, NUM_GPU_ENTRIES_A);
-    gpu_do_ave_list(ave_init_entries_A, NUM_AVE_ENTRIES_A);
+    //gpu_do_init_list(gpu_init_entries_A, NUM_GPU_ENTRIES_A);
+    //gpu_do_ave_list(ave_init_entries_A, NUM_AVE_ENTRIES_A);
 
     gpu_do_init_list(gpu_init_entries_B, NUM_GPU_ENTRIES_B);
     gpu_do_ave_list(ave_init_entries_B, NUM_AVE_ENTRIES_B);
 
     // messes up DRC?
-    gpu_do_init_list(gpu_init_entries_C, NUM_GPU_ENTRIES_C);
-    gpu_do_ave_list(ave_init_entries_C, NUM_AVE_ENTRIES_C);
+    //gpu_do_init_list(gpu_init_entries_C, NUM_GPU_ENTRIES_C);
+    //gpu_do_ave_list(ave_init_entries_C, NUM_AVE_ENTRIES_C);
 
     abif_gpu_write32(D1GRPH_PRIMARY_SURFACE_ADDRESS, FB_TV_ADDR);
     abif_gpu_write32(D2GRPH_PRIMARY_SURFACE_ADDRESS, FB_DRC_ADDR);
