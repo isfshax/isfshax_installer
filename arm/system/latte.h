@@ -220,7 +220,7 @@
 #define NAND_ECC            (NAND_REG_BASE + 0x014)
 #define NAND_BANK           (NAND_REG_BASE + 0x018)
 #define NAND_UNK1           (NAND_REG_BASE + 0x01C)
-#define NAND_UNK2           (NAND_REG_BASE + 0x030)
+#define NAND_BANK_CTRL      (NAND_REG_BASE + 0x030)
 #define NAND_UNK3           (NAND_REG_BASE + 0x040)
 
 /*

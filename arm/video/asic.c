@@ -32,3 +32,73 @@ void abif_gpu_mask32(u32 offset, u32 clear32, u32 set32)
     val |= set32;
     abif_gpu_write32(offset, val);
 }
+
+u16 abif_cpl_tr_read16(u32 offset)
+{
+    write32(LT_ABIF_OFFSET, (offset & 0xFFFF) | 0x01000000);
+    return read32(LT_ABIF_DATA) & 0xFFFF;
+}
+
+void abif_cpl_tr_write16(u32 offset, u16 value16)
+{
+    write32(LT_ABIF_OFFSET, (offset & 0xFFFF) | 0x01000000);
+    write32(LT_ABIF_DATA, value16);
+}
+
+u16 abif_cpl_tl_read16(u32 offset)
+{
+    write32(LT_ABIF_OFFSET, (offset & 0xFFFF) | 0x02000000);
+    return read32(LT_ABIF_DATA) & 0xFFFF;
+}
+
+void abif_cpl_tl_write16(u32 offset, u16 value16)
+{
+    write32(LT_ABIF_OFFSET, (offset & 0xFFFF) | 0x02000000);
+    write32(LT_ABIF_DATA, value16);
+}
+
+u16 abif_cpl_br_read16(u32 offset)
+{
+    write32(LT_ABIF_OFFSET, (offset & 0xFFFF) | 0x03000000);
+    return read32(LT_ABIF_DATA) & 0xFFFF;
+}
+
+void abif_cpl_br_write16(u32 offset, u16 value16)
+{
+    write32(LT_ABIF_OFFSET, (offset & 0xFFFF) | 0x03000000);
+    write32(LT_ABIF_DATA, value16);
+}
+
+u16 abif_cpl_bl_read16(u32 offset)
+{
+    write32(LT_ABIF_OFFSET, (offset & 0xFFFF) | 0x04000000);
+    return read32(LT_ABIF_DATA) & 0xFFFF;
+}
+
+void abif_cpl_bl_write16(u32 offset, u16 value16)
+{
+    write32(LT_ABIF_OFFSET, (offset & 0xFFFF) | 0x04000000);
+    write32(LT_ABIF_DATA, value16);
+}
+
+u32 abif_cpl_ct_read32(u32 offset)
+{
+    u32 ret = 0;
+
+    write32(LT_ABIF_OFFSET, offset);
+    ret |= read32(LT_ABIF_DATA) & 0xFFFF;
+    write32(LT_ABIF_OFFSET, (offset & 0xFFFF) + 2);
+    ret |= read32(LT_ABIF_DATA) << 16;
+
+    return ret;
+}
+
+void abif_cpl_ct_write32(u32 offset, u32 value32)
+{
+    write32(LT_ABIF_OFFSET, (offset & 0xFFFF));
+    write32(LT_ABIF_DATA, value32 & 0xFFFF);
+    read32(LT_ABIF_DATA);
+    write32(LT_ABIF_OFFSET, (offset & 0xFFFF) + 2);
+    write32(LT_ABIF_DATA, value32>>16);
+    read32(LT_ABIF_DATA);
+}
