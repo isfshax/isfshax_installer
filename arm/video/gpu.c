@@ -19,6 +19,7 @@
 #include "pll.h"
 //#include "minini.h"
 #include <string.h>
+#include <stdio.h>
 
 void* gpu_tv_primary_surface_addr(void) {
     return (void*)(abif_gpu_read32(D1GRPH_PRIMARY_SURFACE_ADDRESS) & ~4);
@@ -105,34 +106,6 @@ void gpu_do_ave_list(ave_init_entry_t* paEntries, u32 len) {
             udelay(entry->usec_delay);
         }
     }
-}
-
-int BSP_60XeDataStreaming_write(int val)
-{
-    int v4; // r6
-    int v5; // r4
-    unsigned int v6; // r4
-    int v7; // r3
-    int v9; // [sp+0h] [bp-18h] BYREF
-
-    v9 = latte_get_hw_version();
-    if ( (v9 & 0xF000000) != 0 )
-    {
-        set32(LT_60XE_CFG, 0x1000);
-        v5 = read32(LT_60XE_CFG);
-        udelay(10);
-        v6 = v5 & ~8u;
-        if (val == 1)
-            v7 = 0;
-        else
-            v7 = 8;
-        write32(LT_60XE_CFG, (v7 | v6) & ~0x1000);
-    }
-    else
-    {
-        return 1024;
-    }
-    return 0;
 }
 
 int gpu_idk_upll()
@@ -223,54 +196,4 @@ void gpu_cleanup()
     // HACK: I can't get the endianness swap to work :/
     if ((read16(MEM_GPU_ENDIANNESS) & 3) != 2)
         abif_gpu_write32(D1GRPH_SWAP_CNTL, 0x220);
-}
-
-int clocks_ini(const char* key, const char* value)
-{
-    if(!strcmp(key, "gpu_clk_r")) {
-        u32 val_raw = minini_get_uint(value, 0);
-        spll_cfg_customclock.clkR = val_raw & 0xFFFF;
-        printf("gpu_clk_r=0x%04x\n", spll_cfg_customclock.clkR);
-    }
-    else if(!strcmp(key, "gpu_clk_f")) {
-        u32 val_raw = minini_get_uint(value, 0x285ED0);
-        spll_cfg_customclock.clkFMsb = val_raw >> 16;
-        spll_cfg_customclock.clkFLsb = (val_raw & 0xFFFF) >> 1;
-        printf("gpu_clk_f_msb=0x%04x\n", spll_cfg_customclock.clkFMsb);
-        printf("gpu_clk_f_lsb=0x%04x\n", spll_cfg_customclock.clkFLsb);
-    }
-    else if(!strcmp(key, "gpu_clk_s")) {
-        u32 val_raw = minini_get_uint(value, 0x1C2);
-        spll_cfg_customclock.clkS = val_raw & 0xFFFF;
-        printf("gpu_clk_s=0x%04x\n", spll_cfg_customclock.clkS);
-    }
-    else if(!strcmp(key, "gpu_clk_v")) {
-        u32 val_raw = minini_get_uint(value, 7);
-        spll_cfg_customclock.clkVMsb = val_raw >> 16;
-        spll_cfg_customclock.clkVLsb = val_raw & 0xFFFF;
-        printf("gpu_clk_v_msb=0x%04x\n", spll_cfg_customclock.clkVMsb);
-        printf("gpu_clk_v_lsb=0x%04x\n", spll_cfg_customclock.clkVLsb);
-    }
-    else if(!strcmp(key, "gpu_clk_o_0div")) {
-        u32 val_raw = minini_get_uint(value, 4);
-        spll_cfg_customclock.clkO0Div = val_raw & 0xFFFF;
-        printf("gpu_clk_o_0div=0x%04x\n", spll_cfg_customclock.clkO0Div);
-    }
-    else if(!strcmp(key, "gpu_clk_o_1div")) {
-        u32 val_raw = minini_get_uint(value, 4);
-        spll_cfg_customclock.clkO1Div = val_raw & 0xFFFF;
-        printf("gpu_clk_o_1div=0x%04x\n", spll_cfg_customclock.clkO1Div);
-    }
-    else if(!strcmp(key, "gpu_clk_o_2div")) {
-        u32 val_raw = minini_get_uint(value, 0);
-        spll_cfg_customclock.clkO2Div = val_raw & 0xFFFF;
-        printf("gpu_clk_o_2div=0x%04x\n", spll_cfg_customclock.clkO2Div);
-    }
-
-    /*u64 gpu_freq = pll_calc_frequency(&spll_cfg_customclock);
-    u64 gpu_freq_mhz = gpu_freq / 1000000;
-    u64 gpu_freq_remainder = (gpu_freq-(gpu_freq_mhz * 1000000));
-    printf("GPU clocked at: %llu.%lluMHz\n", gpu_freq_mhz, gpu_freq_remainder);*/
-    
-    return 0;
 }
