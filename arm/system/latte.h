@@ -186,6 +186,7 @@
 #define LT_SMC_I2C_INT_STATE          (LT_REG_BASE + 0x584)
 
 #define LT_CHIPREVID                  (LT_REG_BASE + 0x5A0)
+#define LT_ASICREV_CCR                (LT_REG_BASE + 0x5A0)
 #define LT_SYSCFG1                    (LT_REG_BASE + 0x5A4)
 #define LT_COMPAT_MEMCTRL_STATE       (LT_REG_BASE + 0x5B0)
 #define LT_COMPAT_AHB_STATE           (LT_REG_BASE + 0x5B4)
@@ -364,7 +365,7 @@
 #define MEM_PROF_CPUAHM0        (MEM_REG_BASE + 0x286)
 #define MEM_RDPR_PI             (MEM_REG_BASE + 0x2A6)
 #define MEM_ARB_MISC            (MEM_REG_BASE + 0x2B6)
-#.define MEM_WRMUX               (MEM_REG_BASE + 0x2BA)
+#define MEM_WRMUX               (MEM_REG_BASE + 0x2BA)
 #define MEM_ARB_EXADDR          (MEM_REG_BASE + 0x2C0)
 #define MEM_ARB_EXCMD           (MEM_REG_BASE + 0x2C2)
 #define MEM_SEQ_REG_VAL         (MEM_REG_BASE + 0x2C4)

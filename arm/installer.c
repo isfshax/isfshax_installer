@@ -13,6 +13,7 @@
 #include "common/utils.h"
 #include "system/smc.h"
 #include "system/latte.h"
+#include "system/latte.h"
 #include "storage/sd/fatfs/ff.h"
 #include "storage/nand/nand.h"
 #include "storage/nand/isfs/isfs.h"
