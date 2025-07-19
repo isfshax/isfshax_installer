@@ -29,16 +29,6 @@ void* gpu_drc_primary_surface_addr(void) {
     return (void*)(abif_gpu_read32(D2GRPH_PRIMARY_SURFACE_ADDRESS) & ~4);
 }
 
-void gpu_dump_dc_regs()
-{
-    for (int i = 0; i < 0x800; i += 4) {
-        printf("%04x: %08x\n", 0x6100 + i, abif_gpu_read32(0x6100 + i)); 
-    }
-    for (int i = 0; i < 0x800; i += 4) {
-        printf("%04x: %08x\n", 0x6900 + i, abif_gpu_read32(0x6900 + i)); 
-    }
-}
-
 void gpu_test(void) {
 #if 0
     // 01200000 when working, 01000004 when JTAG fuses unloaded
@@ -53,7 +43,7 @@ void gpu_test(void) {
 }
 
 void gpu_switch_endianness(void) {
-    if (read16(MEM_GPU_ENDIANNESS) & 3 == 1)
+    if ((read16(MEM_GPU_ENDIANNESS) & 3) == 1)
         return;
 
     abif_gpu_write32(0x8020, 0xFFFFFFFF);
@@ -132,11 +122,6 @@ void gpu_display_init(void) {
     //gpu_switch_endianness();
     ave_i2c_init(400000, 0);
 
-    int needs_ave_init = 1;
-    if (gpu_tv_primary_surface_addr()) {
-        needs_ave_init = 0;
-    }
-
     //pll_vi1_shutdown_alt();
     //pll_vi2_shutdown();
 
@@ -152,9 +137,6 @@ void gpu_display_init(void) {
     // messes up DRC?
     gpu_do_init_list(gpu_init_entries_C, NUM_GPU_ENTRIES_C);
     gpu_do_ave_list(ave_init_entries_C, NUM_AVE_ENTRIES_C);
-
-    printf("GPU TV addr: %08x\n", gpu_tv_primary_surface_addr());
-    printf("GPU DRC addr: %08x\n", gpu_drc_primary_surface_addr());
 
     abif_gpu_write32(D1GRPH_PRIMARY_SURFACE_ADDRESS, FB_TV_ADDR);
     abif_gpu_write32(D2GRPH_PRIMARY_SURFACE_ADDRESS, FB_DRC_ADDR);
@@ -183,10 +165,6 @@ void gpu_display_init(void) {
 
 void gpu_cleanup()
 {
-    u64 gpu_freq = pll_calc_frequency(&spll_cfg_customclock);
-    u64 gpu_freq_mhz = gpu_freq / 1000000;
-    u64 gpu_freq_remainder = (gpu_freq-(gpu_freq_mhz * 1000000));
-    printf("GPU clocked at: %llu.%lluMHz\n", gpu_freq_mhz, gpu_freq_remainder);
     pll_spll_write(&spll_cfg_customclock);
     udelay(500);
 

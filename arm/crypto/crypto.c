@@ -58,7 +58,6 @@ int crypto_check_de_Fused()
         return crypto_otp_is_de_Fused;
     }
 
-    int has_jtag = 0;
     int bytes_loaded = 0x3FF;
 
     crypto_otp_is_de_Fused = 0;
@@ -69,10 +68,6 @@ int crypto_check_de_Fused()
         if (--bytes_loaded <= 0) {
             break;
         }
-    }
-
-    if (!otp.jtag_status) {
-        has_jtag = 1;
     }
 
     otp_iter = ((u8*)&otp);

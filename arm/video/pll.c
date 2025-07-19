@@ -269,20 +269,10 @@ int pll_upll_write(bsp_pll_cfg *pCfg)
 int pll_upll_read(bsp_pll_cfg *pOut)
 {
     int v4; // r0
-    int v5; // r2
     int v6; // r0
-    unsigned int v7; // r2
-    int v8; // r3
-    unsigned int v9; // r1
-    unsigned int v10; // r0
     int v11; // r0
-    unsigned int v12; // r3
-    unsigned int v13; // r1
-    unsigned int v14; // r12
     int v15; // r0
     int v17; // r0
-    int result; // r0
-
     memset(pOut, 0, sizeof(bsp_pll_cfg));
 
     v4 = abif_cpl_ct_read32(0x878u);
@@ -308,7 +298,7 @@ int pll_upll_read(bsp_pll_cfg *pOut)
     if ( (v17 & 0x20000000) != 0
         || (v17 & 0x10000000) != 0
         || (v17 & 0x8000000u) >> 27
-        || (abif_cpl_ct_read32(0x888u) & 0xE000) != 0x4000 && (abif_cpl_ct_read32(0x888u) & 7) != 2 )
+        || (((abif_cpl_ct_read32(0x888u) & 0xE000) != 0x4000) && ((abif_cpl_ct_read32(0x888u) & 7) != 2)))
     {
         return 0;
     }
@@ -543,10 +533,8 @@ int pll_usb_write(bsp_pll_cfg *pCfg)
     u16 v3; // r4
     u16 v4; // r1
     u16 v5; // r3
-    u16 v6; // r2
     u16 v7; // r1
     u16 v8; // r3
-    u16 v9; // r2
     u16 v10; // r1
     u16 v11; // r3
 
