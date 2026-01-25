@@ -253,13 +253,14 @@ static int _load_isfshax_superblock(isfshax_super *s_isfshax)
     u8 savedhash[SHA_HASH_SIZE], computedhash[SHA_HASH_SIZE];
 
     printf("Loading superblock from SD card...\n");
-    if (_load_file_from_sd("superblock.img", s_isfshax, sizeof(*s_isfshax)) ||
-        _load_file_from_sd("superblock.img.sha", savedhash, sizeof(savedhash))) {
+    int error;
+    if ((error =_load_file_from_sd("superblock.img", s_isfshax, sizeof(*s_isfshax))) ||
+        (error = _load_file_from_sd("superblock.img.sha", savedhash, sizeof(savedhash)))) {
 
-        printf("Not found on SD card, trying slc\n");
-        if (_load_file_from_slc("slc:/sys/hax/installer/sblock.img", s_isfshax, sizeof(*s_isfshax)) ||
-            _load_file_from_slc("slc:/sys/hax/installer/sblock.sha", savedhash, sizeof(savedhash))) {
-            pr_error("Failed to load superblock from sd card and slc\n");
+        printf("Not found on SD card (%d), trying slc\n", error);
+        if ((error = _load_file_from_slc("slc:/sys/hax/installer/sblock.img", s_isfshax, sizeof(*s_isfshax))) ||
+            (error = _load_file_from_slc("slc:/sys/hax/installer/sblock.sha", savedhash, sizeof(savedhash)))) {
+            pr_error("Failed to load superblock from sd card and slc (%d)\n", error);
             return -1;
         }
     }
@@ -290,7 +291,7 @@ static int _load_file_from_sd(const char *path, void *buf, u32 size)
     f_read(&fil, buf, size, &br);
     f_close(&fil);
 
-    return (size != br) ? -2 : 0;
+    return (size != br) ? -3 : 0;
 }
 
 static int _load_file_from_slc(const char *path, void *buf, u32 size)
@@ -308,10 +309,10 @@ static int _load_file_from_slc(const char *path, void *buf, u32 size)
 
     if (isfs_read(&file, buf, size, &bytes_read) != 0) {
         isfs_close(&file);
-        return -2;
+        return -3;
     }
 
     isfs_close(&file);
 
-    return (bytes_read == size) ? 0 : -2;
+    return (bytes_read == size) ? 0 : -4;
 }
