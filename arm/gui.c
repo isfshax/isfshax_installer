@@ -13,6 +13,7 @@
 #include "gui.h"
 #include "installer.h"
 #include "video/menu.h"
+#include "video/console.h"
 #include <stdio.h>
 
 static void main_install(menu_t *menu);
@@ -85,9 +86,9 @@ static void main_install(menu_t *menu) {
 static void main_uninstall(menu_t *menu) {
     int rc;
 
-    puts("\e[2;0H\e[0J" "WANRING: Before Uninstalling ISFShax make sure the console boots correctly using\n"
+    puts("\e[2;0H\e[0J" CONSOLE_RED "WARNING: Before Uninstalling ISFShax make sure the console boots correctly using\n"
         "the 'Patch ISFShax and boot IOS (slc)' option in minute\n"
-        "If your console can't boot correctly, uninstalling ISFShax will BRICK the console!!!\n\n"
+        "If your console can't boot correctly, uninstalling ISFShax will BRICK the console!!!" CONSOLE_RESET "\n\n"
         "Uninstall isfshax now?");
     if (!ask_confirmation()) return;
 

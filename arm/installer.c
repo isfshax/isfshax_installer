@@ -25,8 +25,12 @@
 #include "installer.h"
 #include "boot1.h"
 
-static int _load_isfshax_superblock(isfshax_super *s_isfshax);
-static int _load_file_to_mem(const char *path, void *buf, u32 size);
+superblock_state s_superblock_state = SUPERBLOCK_NOT_CHECKED;
+static isfshax_super s_superblock_buf;
+
+static void installer_check_superblock(void);
+static int _load_file_from_sd(const char *path, void *buf, u32 size);
+static int _load_file_from_slc(const char *path, void *buf, u32 size);
 
 
 void pr_error(const char *fmt, ...) {
@@ -66,6 +70,33 @@ int installer_check_compatibility(void)
         printf(CONSOLE_RED "Unsupported (%d)\n" CONSOLE_RESET, boot1ver);
     }
 
+    installer_check_superblock();
+
+    fputs("\nsuperblock.img:      ", stdout);
+    switch(s_superblock_state) {
+    case SUPERBLOCK_FROM_SD:
+        puts(CONSOLE_GREEN "SDCARD" CONSOLE_RESET);
+        break;
+    case SUPERBLOCK_FROM_SLC:
+        puts(CONSOLE_GREEN "SLC" CONSOLE_RESET);
+        break;
+    case SUPERBLOCK_NOT_FOUND:
+        status &= ~ISFSHAX_INSTALL_POSSIBLE;
+        puts(CONSOLE_RED "FILE NOT FOUND" CONSOLE_RESET);
+        break;
+    case SUPERBLOCK_INVALID_SIZE:
+        status &= ~ISFSHAX_INSTALL_POSSIBLE;
+        puts(CONSOLE_RED "INVALID SIZE" CONSOLE_RESET);
+        break;
+    case SUPERBLOCK_INVALID_CHECKSUM:
+        status &= ~ISFSHAX_INSTALL_POSSIBLE;
+        puts(CONSOLE_RED "CHECKSUM ERROR" CONSOLE_RESET);
+        break;
+    default:
+        status &= ~ISFSHAX_INSTALL_POSSIBLE;
+        puts(CONSOLE_RED "UNKNOWN ERROR" CONSOLE_RESET);
+    }
+
     /* check if isfshax is already installed to allow removal */
     fputs("\nisfshax:             ", stdout);
     if ((isfs_load_super(slc, ISFSHAX_GENERATION_FIRST, 0xffffffff) >= 0) &&
@@ -84,19 +115,17 @@ int installer_check_compatibility(void)
 
 int install_isfshax(void)
 {
-    static isfshax_super s_isfshax = {0};
     isfs_ctx *slc = isfs_get_volume(ISFSVOL_SLC);
     int good_slots, needed_slots = ISFSHAX_REDUNDANCY, isfshax_okay = 0;
     isfshax_info isfshax = { };
     int i, index, rc;
 
-    puts("Loading and verifying crafted isfshax superblock");
-
-    rc = _load_isfshax_superblock(&s_isfshax);
-    if (rc) {
-        pr_error("Failed to load crafted isfshax superblock! (%d)\n", rc);
+    if ((s_superblock_state != SUPERBLOCK_FROM_SD) && (s_superblock_state != SUPERBLOCK_FROM_SLC)) {
+        pr_error("No valid superblock found!\n");
         return -1;
-    }    
+    }
+    static isfshax_super s_isfshax;
+    memcpy(&s_isfshax, &s_superblock_buf, sizeof(s_isfshax));
 
     isfshax.magic = ISFSHAX_MAGIC;
     isfshax.generationbase = ISFSHAX_GENERATION_FIRST;
@@ -247,42 +276,78 @@ int uninstall_isfshax(void)
     return 0;
 }
 
-static int _load_isfshax_superblock(isfshax_super *s_isfshax)
+static void installer_check_superblock(void)
 {
     u8 savedhash[SHA_HASH_SIZE], computedhash[SHA_HASH_SIZE];
+    int error;
 
-    puts("Loading superblock.img");
-    if (_load_file_to_mem("superblock.img", s_isfshax, sizeof(*s_isfshax))) {
-        pr_error("Failed to load superblock.img\n");
-        return -1;
+    if ((error = _load_file_from_sd("superblock.img", &s_superblock_buf, sizeof(s_superblock_buf)))) {
+        if (error == -2)
+            s_superblock_state = SUPERBLOCK_INVALID_SIZE;
+        else
+            s_superblock_state = SUPERBLOCK_NOT_FOUND;
+    } else if (_load_file_from_sd("superblock.img.sha", savedhash, sizeof(savedhash)))
+        s_superblock_state = SUPERBLOCK_NOT_FOUND;
+    else
+        s_superblock_state = SUPERBLOCK_FROM_SD;
+
+    if (s_superblock_state == SUPERBLOCK_NOT_FOUND) {
+        if ((error = _load_file_from_slc("slc:/sys/hax/installer/sblock.img", &s_superblock_buf, sizeof(s_superblock_buf)))) {
+            if (error == -2)
+                s_superblock_state = SUPERBLOCK_INVALID_SIZE;
+        } else if (_load_file_from_slc("slc:/sys/hax/installer/sblock.sha", savedhash, sizeof(savedhash)))
+            s_superblock_state = SUPERBLOCK_NOT_FOUND;
+        else
+            s_superblock_state = SUPERBLOCK_FROM_SLC;
     }
 
-    puts("Loading superblock.img.sha");
-    if (_load_file_to_mem("superblock.img.sha", savedhash, sizeof(savedhash))) {
-        pr_error("Failed to load superblock.img.sha\n");
-        return -2;
-    }
 
-    puts("Verifying superblock.img checksum");
-    sha_hash(s_isfshax, computedhash, sizeof(*s_isfshax));
-    if (memcmp(savedhash, computedhash, SHA_HASH_SIZE)) {
-        pr_error("Checksum verification failed!\n");
-        return -3;
-    }
+    if ((s_superblock_state != SUPERBLOCK_FROM_SD) && (s_superblock_state != SUPERBLOCK_FROM_SLC))
+        return;
 
-    return 0;
+    sha_hash(&s_superblock_buf, computedhash, sizeof(s_superblock_buf));
+    if (memcmp(savedhash, computedhash, SHA_HASH_SIZE))
+        s_superblock_state = SUPERBLOCK_INVALID_CHECKSUM;
 }
 
-static int _load_file_to_mem(const char *path, void *buf, u32 size)
+static int _load_file_from_sd(const char *path, void *buf, u32 size)
 {
     UINT br = 0;
     FIL fil;
 
     if (f_open(&fil, path, FA_READ))
         return -1;
-    if (f_size(&fil) == size)
-        f_read(&fil, buf, size, &br);
+
+    if (f_size(&fil) != size) {
+        f_close(&fil);
+        return -2;
+    }
+
+    f_read(&fil, buf, size, &br);
     f_close(&fil);
 
-    return (size != br) ? -2 : 0;
+    return (size != br) ? -3 : 0;
+}
+
+static int _load_file_from_slc(const char *path, void *buf, u32 size)
+{
+    isfs_file file;
+    size_t bytes_read;
+
+    if (isfs_open(&file, path) != 0)
+        return -1;
+
+    if (file.fst->size != size) {
+        isfs_close(&file);
+        return -2;
+    }
+
+    if (isfs_read(&file, buf, size, &bytes_read) != 0) {
+        isfs_close(&file);
+        return -3;
+    }
+
+    isfs_close(&file);
+
+    return (bytes_read == size) ? 0 : -4;
 }
