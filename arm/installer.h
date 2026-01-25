@@ -12,6 +12,17 @@
 
 #define ISFSHAX_INSTALL_POSSIBLE    (1 << 0)
 #define ISFSHAX_REMOVAL_POSSIBLE    (1 << 1)
+typedef enum {
+    SUPERBLOCK_NOT_CHECKED,
+    SUPERBLOCK_FROM_SD,
+    SUPERBLOCK_FROM_SLC,
+    SUPERBLOCK_NOT_FOUND,
+    SUPERBLOCK_INVALID_SIZE,
+    SUPERBLOCK_INVALID_CHECKSUM
+} superblock_state;
+
+extern superblock_state s_superblock_state;
+
 int installer_check_compatibility(void);
 
 int install_isfshax(void);
