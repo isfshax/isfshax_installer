@@ -47,6 +47,7 @@ void NORETURN _main(void* base) {
     crypto_initialize();
 
     int res;
+    int tries = 0;
     do {
         sdcard_init();
         res = ELM_Mount();
@@ -54,7 +55,7 @@ void NORETURN _main(void* base) {
             printf("SD Card mount error: %d\n", res);
             udelay(1000000);
         }
-    } while(res);
+    } while(res && (++tries < 5));
 
     if (crypto_check_de_Fused()) {
         //console_power_to_continue();
