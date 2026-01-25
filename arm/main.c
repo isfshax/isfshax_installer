@@ -29,6 +29,7 @@
 #include "storage/sd/sdcard.h"
 #include "storage/sd/fatfs/elm.h"
 #include "storage/nand/nand.h"
+#include "storage/nand/isfs/isfs.h"
 #include "crypto/crypto.h"
 #include "system/smc.h"
 #include "common/utils.h"
@@ -74,6 +75,7 @@ void NORETURN _main(void* base) {
     }
     
     nand_initialize();
+    isfs_init();
 
     smc_get_events();
     smc_set_odd_power(false);
