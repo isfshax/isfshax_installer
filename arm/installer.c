@@ -274,12 +274,12 @@ static int _load_isfshax_superblock(isfshax_super *s_isfshax)
     return 0;
 }
 
-static int _load_file_to_mem(const char *path, void *buf, u32 size)
+static int _load_file_to_mem(const char *sd_path, const char *slc_filename, void *buf, u32 size)
 {
     UINT br = 0;
     FIL fil;
 
-    if (f_open(&fil, path, FA_READ))
+    if (f_open(&fil, sd_path, FA_READ))
         goto try_slc;
     if (f_size(&fil) == size)
         f_read(&fil, buf, size, &br);
@@ -291,7 +291,7 @@ static int _load_file_to_mem(const char *path, void *buf, u32 size)
 try_slc:
     printf("Not found on SD card, trying slc\n");
     char slc_path[256];
-    snprintf(slc_path, sizeof(slc_path), "slc:/sys/hax/installer/%s", path);
+    snprintf(slc_path, sizeof(slc_path), "slc:/sys/hax/installer/%s", slc_filename);
     return _load_file_from_slc(slc_path, buf, size);
 }
 
