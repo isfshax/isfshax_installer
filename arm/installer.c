@@ -26,7 +26,7 @@
 #include "boot1.h"
 
 static int _load_isfshax_superblock(isfshax_super *s_isfshax);
-static int _load_file_to_mem(const char *path, void *buf, u32 size);
+static int _load_file_to_mem(const char *sd_path, const char *slc_filename, void *buf, u32 size);
 static int _load_file_from_slc(const char *path, void *buf, u32 size);
 
 
@@ -253,14 +253,14 @@ static int _load_isfshax_superblock(isfshax_super *s_isfshax)
     u8 savedhash[SHA_HASH_SIZE], computedhash[SHA_HASH_SIZE];
 
     puts("Loading superblock.img");
-    if (_load_file_to_mem("superblock.img", s_isfshax, sizeof(*s_isfshax))) {
-        pr_error("Failed to load superblock.img from sd card and slc\n");
+    if (_load_file_to_mem("superblock.img", "sblock.img", s_isfshax, sizeof(*s_isfshax))) {
+        pr_error("Failed to load superblock.img\n");
         return -1;
     }
 
     puts("Loading superblock.img.sha");
-    if (_load_file_to_mem("superblock.img.sha", savedhash, sizeof(savedhash))) {
-        pr_error("Failed to load superblock.img.sha from sd card and slc\n");
+    if (_load_file_to_mem("superblock.img.sha", "sblock.sha", savedhash, sizeof(savedhash))) {
+        pr_error("Failed to load superblock.img.sha\n");
         return -2;
     }
 
