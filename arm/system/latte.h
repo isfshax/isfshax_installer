@@ -192,8 +192,6 @@
 #define LT_RESETS_AHMN                (LT_REG_BASE + 0x5E4)
 #define LT_CLOCKGATE                  (LT_REG_BASE + 0x5E8)
 #define LT_SYSPLL_CFG                 (LT_REG_BASE + 0x5EC)
-
-
 #define LT_ABIF_CPLTL_OFFSET          (LT_REG_BASE + 0x620)
 #define LT_ABIF_CPLTL_DATA            (LT_REG_BASE + 0x624)
 #define LT_UNK628                     (LT_REG_BASE + 0x628)
