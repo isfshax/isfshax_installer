@@ -308,7 +308,7 @@ int pll_upll_read(bsp_pll_cfg *pOut)
     if ( (v17 & 0x20000000) != 0
         || (v17 & 0x10000000) != 0
         || (v17 & 0x8000000u) >> 27
-        || (abif_cpl_ct_read32(0x888u) & 0xE000) != 0x4000 && (abif_cpl_ct_read32(0x888u) & 7) != 2 )
+        || ((abif_cpl_ct_read32(0x888u) & 0xE000) != 0x4000 && (abif_cpl_ct_read32(0x888u) & 7) != 2 ))
     {
         return 0;
     }
@@ -353,138 +353,6 @@ void pll_upll_init()
     if (memcmp(&upll_cfg, &cfg, sizeof(bsp_pll_cfg))) {
         pll_upll_write(&upll_cfg);
     }
-}
-
-int pll_syspll_read(bsp_pll_cfg **ppCfg, u32 *pSysClkFreq)
-{
-    bsp_pll_cfg *pCfg = NULL;
-    u32 freq = 0;
-    int result = 0;
-
-    u32 bspVer = latte_get_hw_version();
-    if (!bspVer)
-        return -1;
-
-    if ( (seeprom.bc.library_version) <= 2u )
-    {
-        pCfg = &syspll_243_cfg;
-        freq = 243000000;
-    }
-    else if ( seeprom.bc.sys_pll_speed == 0xF0 )
-    {
-        pCfg = &syspll_240_cfg;
-        freq = 239625000;
-    }
-    else if ( seeprom.bc.sys_pll_speed == 0xF8 )
-    {
-        pCfg = &syspll_248_cfg;
-        freq = 248625000;
-    }
-    else
-    {
-        pCfg = &syspll_243_cfg;
-        freq = 243000000;
-    }
-
-    if ( ppCfg )
-        *ppCfg = pCfg;
-
-    if ( pSysClkFreq )
-        *pSysClkFreq = freq;
-    return result;
-}
-
-int pll_syspll_write(bsp_pll_cfg *pParams)
-{
-    int v1; // lr
-    u16 v3; // r0
-    u16 v4; // r1
-    u16 v5; // r2
-    u16 v6; // r0
-    u16 v7; // r1
-    u16 v8; // r2
-    u16 v9; // r0
-    u16 v10; // r1
-    u16 v11; // r2
-    int v13; // [sp+0h] [bp-2Ch]
-    int v17; // [sp+2Ch] [bp+0h] BYREF
-    u32 bspVer;
-
-    v13 = 0;
-    bspVer = latte_get_hw_version();
-    if ( bspVer && (bspVer & 0xF000000) != 0 )
-    {
-        set32(LT_CLOCKINFO, 1);
-        udelay(10);
-        clear32(LT_RESETS_COMPAT, RSTB_DSKPLL);
-        udelay(10);
-        clear32(LT_RESETS_COMPAT, NLCKB_SYSPLL);
-        udelay(20);
-        clear32(LT_RESETS_COMPAT, RSTB_SYSPLL);
-        abif_cpl_tl_write16(0x20u, pParams->clkR | (pParams->clkO0Div << 6));
-        v3 = pParams->clkFMsb;
-        if (pParams->bypVco)
-            v4 = 0x1000;
-        else
-            v4 = 0;
-        if (pParams->bypOut)
-            v5 = 0x2000;
-        else
-            v5 = 0;
-        abif_cpl_tl_write16(0x22u, v4 | v3 | v5);
-        v6 = pParams->clkO1Div;
-        if (pParams->satEn)
-            v7 = 0x800;
-        else
-            v7 = 0;
-        if (pParams->fastEn)
-            v8 = 0x1000;
-        else
-            v8 = 0;
-        abif_cpl_tl_write16(0x24u, v7 | v6 | v8);
-        abif_cpl_tl_write16(0x26u, pParams->clkFLsb);
-        abif_cpl_tl_write16(0x28u, pParams->clkVLsb);
-        v9 = pParams->clkVMsb;
-        if ( pParams->ssEn)
-            v10 = 0x800;
-        else
-            v10 = 0;
-        if (pParams->dithEn)
-            v11 = 0x1000;
-        else
-            v11 = 0;
-        abif_cpl_tl_write16(0x2Au, v10 | v9 | v11);
-        abif_cpl_tl_write16(0x2Cu, pParams->clkS);
-        abif_cpl_tl_write16(0x2Eu, pParams->bwAdj);
-        clear32(LT_CLOCKINFO, 2);
-        set32(LT_SYSPLL_CFG, pParams->options & 1);
-        udelay(5);
-        set32(LT_RESETS_COMPAT, RSTB_SYSPLL);
-        udelay(200);
-        set32(LT_RESETS_COMPAT, NLCKB_SYSPLL);
-        set32(LT_RESETS_COMPAT, RSTB_DSKPLL);
-        udelay(200);
-        clear32(LT_CLOCKINFO, 1);
-    }
-    return v13;
-}
-
-int pll_syspll_init(int bIdk)
-{
-    int result = 0;
-    bsp_pll_cfg cfg;
-    bsp_pll_cfg *ppCfg;
-
-    ppCfg = 0;
-    result = pll_syspll_read(&ppCfg, 0);
-    if ( !result )
-    {
-        memcpy(&cfg, ppCfg, sizeof(cfg));
-        if ( bIdk )
-            cfg.options |= 1;
-        result = pll_syspll_write(&cfg);
-    }
-    return result;
 }
 
 int pll_spll_write(bsp_pll_cfg *pPllCfg)

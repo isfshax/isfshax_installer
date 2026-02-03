@@ -193,10 +193,6 @@
 #define LT_CLOCKGATE                  (LT_REG_BASE + 0x5E8)
 #define LT_SYSPLL_CFG                 (LT_REG_BASE + 0x5EC)
 
-#include "common/utils.h"
-static inline u32 latte_get_hw_version(void) {
-    return read32(LT_ASICREV_CCR);
-}
 
 #define LT_ABIF_CPLTL_OFFSET          (LT_REG_BASE + 0x620)
 #define LT_ABIF_CPLTL_DATA            (LT_REG_BASE + 0x624)
