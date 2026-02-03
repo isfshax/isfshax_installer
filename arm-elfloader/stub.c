@@ -74,8 +74,8 @@ void *_main(void *base)
     elf = (u8*) base;
     elf += hdr->hdrsize + hdr->loadersize;
 
-    mem_setswap(1);
-    disable_boot0(1);
+    mem_setswap();
+    disable_boot0();
 
     entry = loadelf(elf);
     return entry;
