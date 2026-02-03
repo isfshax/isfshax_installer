@@ -55,14 +55,20 @@ void *loadelf(const u8 *elf) {
     return ehdr->e_entry;
 }
 
-static inline void disable_boot0()
+static inline void disable_boot0(int enable)
 {
-    set32(HW_BOOT0, 0x1000);
+    if (enable)
+        set32(HW_BOOT0, 0x1000);
+    else
+        clear32(HW_BOOT0, 0x1000);
 }
 
-static inline void mem_setswap()
+static inline void mem_setswap(int enable)
 {
-    set32(HW_MEMMIRR, 0x20);
+    if (enable)
+        set32(HW_MEMMIRR, 0x20);
+    else
+        clear32(HW_MEMMIRR, 0x20);
 }
 
 void *_main(void *base)
