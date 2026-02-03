@@ -62,6 +62,9 @@ void gui_main() {
     m_main.option[0].active = (status & ISFSHAX_INSTALL_POSSIBLE) != 0;
     m_main.option[1].active = (status & ISFSHAX_REMOVAL_POSSIBLE) != 0;
 
+    if (!m_main.option[0].active)
+        m_main.selected = 3;
+
     /* enter main menu */
     menu_init(&m_main);
 }

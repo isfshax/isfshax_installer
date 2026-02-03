@@ -75,6 +75,10 @@ void menu_select(menu_t *menu)
 void menu_init(menu_t *menu)
 {
     menu->state = MENU_REDRAW;
+
+    if (!menu->option[menu->selected].active)
+        menu_next_selection(menu);
+
     while (menu->state != MENU_QUIT)
     {
         menu_draw(menu);
