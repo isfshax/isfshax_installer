@@ -23,6 +23,7 @@ typedef enum {
 
 extern superblock_state s_superblock_state;
 
+void installer_set_source(int source);
 int installer_check_compatibility(void);
 
 int install_isfshax(void);

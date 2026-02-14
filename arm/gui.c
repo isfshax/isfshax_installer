@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <malloc.h>
+#include <string.h>
 #include "video/gfx.h"
 #include "system/exception.h"
 #include "system/memory.h"
@@ -10,6 +11,7 @@
 #include "crypto/crypto.h"
 #include "system/smc.h"
 #include "common/utils.h"
+#include "common/isfshax_cmd.h"
 #include "gui.h"
 #include "installer.h"
 #include "video/menu.h"
@@ -38,25 +40,78 @@ static menu_t m_main = {
 
 void gui_main() {
     int status = 0;
+    bool skip_disclaimer = false;
+    isfshax_cmd *cmd = (isfshax_cmd *)ISFSHAX_CMD_ADDR;
+
     puts("\e[H\e[J\e[36misfshax\e[0m installer");
     puts("\b\e[19D(c) 2021 rw-r-r-0644\n");
 
-    /* disclaimer */
-    puts(
-        "THIS SOFTWARE COMES WITH ABSOLUTELY NO WARRANTY! YOU ARE\n"
-        "CHOOSING TO INSTALL THIS SOFTWARE, AT YOUR OWN RISK.\n"
-        "THE AUTHOR(S) OF THIS SOFTWARE WILL NOT BE HELD LIABLE\n"
-        "FOR ANY DAMAGE IT MIGHT CAUSE.\n\n"
-        "THIS SOFTWARE IS AVAILABLE FOR FREE UNDER THE TERMS OF THE\n"
-        "GNU GPLv2 LICENSE. IF YOU'VE PAID FOR THIS SOFTWARE, YOU\n"
-        "HAVE BEEN SCAMMED AND SHOULD ASK FOR YOUR MONEY BACK.\n"
-    );
-    wait_continue();
+    if (memcmp(cmd->magic, ISFSHAX_CMD_MAGIC, 8) == 0) {
+        u32 command = cmd->command;
+        u32 parameter = cmd->parameter;
+        memset(cmd->magic, 0, 8);
 
-    /* check isfshax compatibility */
-    puts("\e[2;0H\e[0J\e[33mCompatibility check\e[0m");
-    status = installer_check_compatibility();
-    wait_continue();
+        int source = parameter & 0xFF;
+        int post_action = (parameter >> 30) & 0x3;
+
+        installer_set_source(source);
+
+        puts("\e[2;0H\e[0J\e[33mAutomated Command Execution\e[0m");
+        status = installer_check_compatibility();
+
+        int rc = -1;
+        if (command == ISFSHAX_CMD_INSTALL) {
+            if (status & ISFSHAX_INSTALL_POSSIBLE) {
+                rc = install_isfshax();
+            } else {
+                pr_error("Install not possible!\n");
+            }
+        } else if (command == ISFSHAX_CMD_UNINSTALL) {
+            if (status & ISFSHAX_REMOVAL_POSSIBLE) {
+                rc = uninstall_isfshax();
+            } else {
+                pr_error("Uninstall not possible!\n");
+            }
+        } else {
+            pr_error("Unknown command 0x%08X\n", command);
+        }
+
+        if (rc >= 0) {
+            skip_disclaimer = true;
+            if (post_action == ISFSHAX_CMD_POST_REBOOT) {
+                puts("Rebooting...");
+                udelay(2000000);
+                smc_shutdown(true);
+            } else if (post_action == ISFSHAX_CMD_POST_POWEROFF) {
+                puts("Powering off...");
+                udelay(2000000);
+                smc_shutdown(false);
+            }
+            // Refresh status for the menu
+            status = installer_check_compatibility();
+        }
+        installer_set_source(-1);
+        wait_continue();
+    }
+
+    if (!skip_disclaimer) {
+        /* disclaimer */
+        puts(
+            "THIS SOFTWARE COMES WITH ABSOLUTELY NO WARRANTY! YOU ARE\n"
+            "CHOOSING TO INSTALL THIS SOFTWARE, AT YOUR OWN RISK.\n"
+            "THE AUTHOR(S) OF THIS SOFTWARE WILL NOT BE HELD LIABLE\n"
+            "FOR ANY DAMAGE IT MIGHT CAUSE.\n\n"
+            "THIS SOFTWARE IS AVAILABLE FOR FREE UNDER THE TERMS OF THE\n"
+            "GNU GPLv2 LICENSE. IF YOU'VE PAID FOR THIS SOFTWARE, YOU\n"
+            "HAVE BEEN SCAMMED AND SHOULD ASK FOR YOUR MONEY BACK.\n"
+        );
+        wait_continue();
+
+        /* check isfshax compatibility */
+        puts("\e[2;0H\e[0J\e[33mCompatibility check\e[0m");
+        status = installer_check_compatibility();
+        wait_continue();
+    }
 
     /* update main menu accordingly */
     m_main.option[0].active = (status & ISFSHAX_INSTALL_POSSIBLE) != 0;

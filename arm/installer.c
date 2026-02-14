@@ -24,14 +24,21 @@
 #include "video/console.h"
 #include "installer.h"
 #include "boot1.h"
+#include "common/isfshax_cmd.h"
 
 superblock_state s_superblock_state = SUPERBLOCK_NOT_CHECKED;
 static isfshax_super s_superblock_buf;
+static int s_forced_source = -1;
 
 static void installer_check_superblock(void);
 static int _load_file_from_sd(const char *path, void *buf, u32 size);
 static int _load_file_from_slc(const char *path, void *buf, u32 size);
 
+
+void installer_set_source(int source)
+{
+    s_forced_source = source;
+}
 
 void pr_error(const char *fmt, ...) {
     va_list va;
@@ -281,26 +288,31 @@ static void installer_check_superblock(void)
     u8 savedhash[SHA_HASH_SIZE], computedhash[SHA_HASH_SIZE];
     int error;
 
-    if ((error = _load_file_from_sd("superblock.img", &s_superblock_buf, sizeof(s_superblock_buf)))) {
-        if (error == -2)
-            s_superblock_state = SUPERBLOCK_INVALID_SIZE;
-        else
-            s_superblock_state = SUPERBLOCK_NOT_FOUND;
-    } else if (_load_file_from_sd("superblock.img.sha", savedhash, sizeof(savedhash)))
-        s_superblock_state = SUPERBLOCK_NOT_FOUND;
-    else
-        s_superblock_state = SUPERBLOCK_FROM_SD;
+    s_superblock_state = SUPERBLOCK_NOT_FOUND;
 
-    if (s_superblock_state == SUPERBLOCK_NOT_FOUND) {
-        if ((error = _load_file_from_slc("slc:/sys/hax/installer/sblock.img", &s_superblock_buf, sizeof(s_superblock_buf)))) {
-            if (error == -2)
-                s_superblock_state = SUPERBLOCK_INVALID_SIZE;
-        } else if (_load_file_from_slc("slc:/sys/hax/installer/sblock.sha", savedhash, sizeof(savedhash)))
-            s_superblock_state = SUPERBLOCK_NOT_FOUND;
-        else
-            s_superblock_state = SUPERBLOCK_FROM_SLC;
+    if (s_forced_source == -1 || s_forced_source == ISFSHAX_CMD_SOURCE_SD) {
+        if ((error = _load_file_from_sd("superblock.img", &s_superblock_buf, sizeof(s_superblock_buf))) == 0) {
+            if (_load_file_from_sd("superblock.img.sha", savedhash, sizeof(savedhash)) == 0) {
+                s_superblock_state = SUPERBLOCK_FROM_SD;
+            } else {
+                s_superblock_state = SUPERBLOCK_NOT_FOUND;
+            }
+        } else if (error == -2) {
+            s_superblock_state = SUPERBLOCK_INVALID_SIZE;
+        }
     }
 
+    if (s_superblock_state == SUPERBLOCK_NOT_FOUND && (s_forced_source == -1 || s_forced_source == ISFSHAX_CMD_SOURCE_SLC)) {
+        if ((error = _load_file_from_slc("slc:/sys/hax/installer/sblock.img", &s_superblock_buf, sizeof(s_superblock_buf))) == 0) {
+            if (_load_file_from_slc("slc:/sys/hax/installer/sblock.sha", savedhash, sizeof(savedhash)) == 0) {
+                s_superblock_state = SUPERBLOCK_FROM_SLC;
+            } else {
+                s_superblock_state = SUPERBLOCK_NOT_FOUND;
+            }
+        } else if (error == -2) {
+            s_superblock_state = SUPERBLOCK_INVALID_SIZE;
+        }
+    }
 
     if ((s_superblock_state != SUPERBLOCK_FROM_SD) && (s_superblock_state != SUPERBLOCK_FROM_SLC))
         return;
