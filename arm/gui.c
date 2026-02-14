@@ -26,7 +26,7 @@ static int ask_confirmation(void);
 static void wait_continue(void);
 
 static menu_t m_main = {
-    .title = "\e[2;0H\e[0J\e[33mMain menu\e[0m",
+    .title = "\e[11;0H\e[0J\e[33mMain menu\e[0m",
     .option = {
         {"Install isfshax", &main_install, 0},
         {"Uninstall isfshax", &main_uninstall, 0},
@@ -40,11 +40,21 @@ static menu_t m_main = {
 
 void gui_main() {
     int status = 0;
-    bool skip_disclaimer = false;
     isfshax_cmd *cmd = (isfshax_cmd *)ISFSHAX_CMD_ADDR;
 
     puts("\e[H\e[J\e[36misfshax\e[0m installer");
     puts("\b\e[19D(c) 2021 rw-r-r-0644\n");
+
+    /* disclaimer */
+    puts(
+        "THIS SOFTWARE COMES WITH ABSOLUTELY NO WARRANTY! YOU ARE\n"
+        "CHOOSING TO INSTALL THIS SOFTWARE, AT YOUR OWN RISK.\n"
+        "THE AUTHOR(S) OF THIS SOFTWARE WILL NOT BE HELD LIABLE\n"
+        "FOR ANY DAMAGE IT MIGHT CAUSE.\n\n"
+        "THIS SOFTWARE IS AVAILABLE FOR FREE UNDER THE TERMS OF THE\n"
+        "GNU GPLv2 LICENSE. IF YOU'VE PAID FOR THIS SOFTWARE, YOU\n"
+        "HAVE BEEN SCAMMED AND SHOULD ASK FOR YOUR MONEY BACK.\n"
+    );
 
     if (memcmp(cmd->magic, ISFSHAX_CMD_MAGIC, 8) == 0) {
         u32 command = cmd->command;
@@ -56,7 +66,7 @@ void gui_main() {
 
         installer_set_source(source);
 
-        puts("\e[2;0H\e[0J\e[33mAutomated Command Execution\e[0m");
+        puts("\e[11;0H\e[0J\e[33mAutomated Command Execution\e[0m");
         status = installer_check_compatibility();
 
         int rc = -1;
@@ -77,7 +87,6 @@ void gui_main() {
         }
 
         if (rc >= 0) {
-            skip_disclaimer = true;
             if (post_action == ISFSHAX_CMD_POST_REBOOT) {
                 puts("Rebooting...");
                 udelay(2000000);
@@ -92,23 +101,11 @@ void gui_main() {
         }
         installer_set_source(-1);
         wait_continue();
-    }
-
-    if (!skip_disclaimer) {
-        /* disclaimer */
-        puts(
-            "THIS SOFTWARE COMES WITH ABSOLUTELY NO WARRANTY! YOU ARE\n"
-            "CHOOSING TO INSTALL THIS SOFTWARE, AT YOUR OWN RISK.\n"
-            "THE AUTHOR(S) OF THIS SOFTWARE WILL NOT BE HELD LIABLE\n"
-            "FOR ANY DAMAGE IT MIGHT CAUSE.\n\n"
-            "THIS SOFTWARE IS AVAILABLE FOR FREE UNDER THE TERMS OF THE\n"
-            "GNU GPLv2 LICENSE. IF YOU'VE PAID FOR THIS SOFTWARE, YOU\n"
-            "HAVE BEEN SCAMMED AND SHOULD ASK FOR YOUR MONEY BACK.\n"
-        );
+    } else {
         wait_continue();
 
         /* check isfshax compatibility */
-        puts("\e[2;0H\e[0J\e[33mCompatibility check\e[0m");
+        puts("\e[11;0H\e[0J\e[33mCompatibility check\e[0m");
         status = installer_check_compatibility();
         wait_continue();
     }
@@ -127,10 +124,10 @@ void gui_main() {
 static void main_install(menu_t *menu) {
     int rc;
 
-    puts("\e[2;0H\e[0JInstall isfshax now?");
+    puts("\e[11;0H\e[0JInstall isfshax now?");
     if (!ask_confirmation()) return;
 
-    puts("\e[2;0H\e[0JInstalling isfshax...");
+    puts("\e[11;0H\e[0JInstalling isfshax...");
     rc = install_isfshax();
 
     if (rc >= 0) {
@@ -144,13 +141,13 @@ static void main_install(menu_t *menu) {
 static void main_uninstall(menu_t *menu) {
     int rc;
 
-    puts("\e[2;0H\e[0J" CONSOLE_RED "WARNING: Before Uninstalling ISFShax make sure the console boots correctly using\n"
+    puts("\e[11;0H\e[0J" CONSOLE_RED "WARNING: Before Uninstalling ISFShax make sure the console boots correctly using\n"
         "the 'Patch ISFShax and boot IOS (slc)' option in minute\n"
         "If your console can't boot correctly, uninstalling ISFShax will BRICK the console!!!" CONSOLE_RESET "\n\n"
         "Uninstall isfshax now?");
     if (!ask_confirmation()) return;
 
-    puts("\e[2;0H\e[0J" "Uninstalling isfshax...");
+    puts("\e[11;0H\e[0J" "Uninstalling isfshax...");
     rc = uninstall_isfshax();
 
     if (rc >= 0) {
@@ -163,7 +160,7 @@ static void main_uninstall(menu_t *menu) {
 
 static void main_credits(menu_t *menu) {
     puts(
-        "\e[2;0H\e[0JThanks to:\n\n"
+        "\e[11;0H\e[0JThanks to:\n\n"
         "rw-r-r-0644,\t\tMaschell,\t\tQuarkTheAwesome,\n"
         "GaryOderNichts,\t\texjam,\t\t\tvgmoose,\n"
         "CompuCat,\t\t\thexkyz,\t\t\tderrek,\n"
