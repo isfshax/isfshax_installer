@@ -31,6 +31,7 @@ static isfshax_super s_superblock_buf;
 static int s_forced_source = -1;
 
 static void installer_check_superblock(void);
+static int _check_superblock_source(const char *img_path, const char *sha_path, superblock_state state);
 static int _load_file_from_sd(const char *path, void *buf, u32 size);
 static int _load_file_from_slc(const char *path, void *buf, u32 size);
 
@@ -283,43 +284,52 @@ int uninstall_isfshax(void)
     return 0;
 }
 
-static void installer_check_superblock(void)
+static int _check_superblock_source(const char *img_path, const char *sha_path, superblock_state state)
 {
     u8 savedhash[SHA_HASH_SIZE], computedhash[SHA_HASH_SIZE];
     int error;
 
+    if (state == SUPERBLOCK_FROM_SD)
+        error = _load_file_from_sd(img_path, &s_superblock_buf, sizeof(s_superblock_buf));
+    else
+        error = _load_file_from_slc(img_path, &s_superblock_buf, sizeof(s_superblock_buf));
+
+    if (error == 0) {
+        if (state == SUPERBLOCK_FROM_SD)
+            error = _load_file_from_sd(sha_path, savedhash, sizeof(savedhash));
+        else
+            error = _load_file_from_slc(sha_path, savedhash, sizeof(savedhash));
+
+        if (error == 0) {
+            sha_hash(&s_superblock_buf, computedhash, sizeof(s_superblock_buf));
+            if (memcmp(savedhash, computedhash, SHA_HASH_SIZE) == 0) {
+                s_superblock_state = state;
+                return 0;
+            }
+            s_superblock_state = SUPERBLOCK_INVALID_CHECKSUM;
+            return -3;
+        }
+        return -1;
+    } else if (error == -2) {
+        s_superblock_state = SUPERBLOCK_INVALID_SIZE;
+        return -2;
+    }
+
+    return -1;
+}
+
+static void installer_check_superblock(void)
+{
     s_superblock_state = SUPERBLOCK_NOT_FOUND;
 
     if (s_forced_source == -1 || s_forced_source == ISFSHAX_CMD_SOURCE_SD) {
-        if ((error = _load_file_from_sd("superblock.img", &s_superblock_buf, sizeof(s_superblock_buf))) == 0) {
-            if (_load_file_from_sd("superblock.img.sha", savedhash, sizeof(savedhash)) == 0) {
-                s_superblock_state = SUPERBLOCK_FROM_SD;
-            } else {
-                s_superblock_state = SUPERBLOCK_NOT_FOUND;
-            }
-        } else if (error == -2) {
-            s_superblock_state = SUPERBLOCK_INVALID_SIZE;
-        }
+        if (_check_superblock_source("superblock.img", "superblock.img.sha", SUPERBLOCK_FROM_SD) == 0)
+            return;
     }
 
-    if (s_superblock_state == SUPERBLOCK_NOT_FOUND && (s_forced_source == -1 || s_forced_source == ISFSHAX_CMD_SOURCE_SLC)) {
-        if ((error = _load_file_from_slc("slc:/sys/hax/installer/sblock.img", &s_superblock_buf, sizeof(s_superblock_buf))) == 0) {
-            if (_load_file_from_slc("slc:/sys/hax/installer/sblock.sha", savedhash, sizeof(savedhash)) == 0) {
-                s_superblock_state = SUPERBLOCK_FROM_SLC;
-            } else {
-                s_superblock_state = SUPERBLOCK_NOT_FOUND;
-            }
-        } else if (error == -2) {
-            s_superblock_state = SUPERBLOCK_INVALID_SIZE;
-        }
+    if (s_superblock_state != SUPERBLOCK_INVALID_SIZE && (s_forced_source == -1 || s_forced_source == ISFSHAX_CMD_SOURCE_SLC)) {
+        _check_superblock_source("slc:/sys/hax/installer/sblock.img", "slc:/sys/hax/installer/sblock.sha", SUPERBLOCK_FROM_SLC);
     }
-
-    if ((s_superblock_state != SUPERBLOCK_FROM_SD) && (s_superblock_state != SUPERBLOCK_FROM_SLC))
-        return;
-
-    sha_hash(&s_superblock_buf, computedhash, sizeof(s_superblock_buf));
-    if (memcmp(savedhash, computedhash, SHA_HASH_SIZE))
-        s_superblock_state = SUPERBLOCK_INVALID_CHECKSUM;
 }
 
 static int _load_file_from_sd(const char *path, void *buf, u32 size)
