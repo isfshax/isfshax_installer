@@ -58,6 +58,8 @@ void gui_main() {
     );
 
     if (memcmp(cmd->magic, ISFSHAX_CMD_MAGIC, 8) == 0) {
+        // avoid accidental rerun
+        memset(cmd->magic, 0, sizeof(cmd->magic));
         gui_handle_automated_cmd(&status);
     } else {
         wait_continue();
