@@ -11,6 +11,7 @@
 #define __UTILS_H__
 
 #include "types.h"
+#include <stdarg.h>
 
 static inline ALWAYS_INLINE u32 read32(u32 addr)
 {
@@ -185,6 +186,7 @@ void memcpy8(void *dst, void *src, u32 size);
 void hexdump(const void *d, int len);
 void udelay(u32 d);
 void panic(u8 v);
+void pr_error(const char *fmt, ...);
 
 static inline ALWAYS_INLINE u32 get_cpsr(void)
 {

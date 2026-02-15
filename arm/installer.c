@@ -41,14 +41,6 @@ void installer_set_source(int source)
     s_forced_source = source;
 }
 
-void pr_error(const char *fmt, ...) {
-    va_list va;
-    va_start(va, fmt);
-    fputs(CONSOLE_RED "ERROR: ", stdout);
-    vprintf(fmt, va);
-    fputs(CONSOLE_RESET, stdout);
-    va_end(va);
-}
 
 int installer_check_compatibility(void)
 {

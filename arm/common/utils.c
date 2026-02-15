@@ -13,10 +13,12 @@
 #include "types.h"
 #include "utils.h"
 #include "video/gfx.h"
+#include "video/console.h"
 #include "system/gpio.h"
 #include "system/latte.h"
 
 #include <stdarg.h>
+#include <stdio.h>
 
 #if defined(CAN_HAZ_USBGECKO) && !defined(LOADER) && !defined(NDEBUG)
 static char ascii(char s) {
@@ -76,4 +78,13 @@ void panic(u8 v)
         //clear32(HW_GPIO1BOUT, GP_SLOTLED);
         //udelay(500000);
     }
+}
+
+void pr_error(const char *fmt, ...) {
+    va_list va;
+    va_start(va, fmt);
+    fputs(CONSOLE_RED "ERROR: ", stdout);
+    vprintf(fmt, va);
+    fputs(CONSOLE_RESET, stdout);
+    va_end(va);
 }
