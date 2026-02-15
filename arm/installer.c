@@ -319,10 +319,7 @@ static void installer_check_superblock(void)
             return;
     }
 
-    if (s_superblock_state == SUPERBLOCK_INVALID_SIZE)
-        return;
-
-    if (s_forced_source == -1 || s_forced_source == ISFSHAX_CMD_SOURCE_SLC) {
+    if ((s_superblock_state == SUPERBLOCK_NOT_FOUND && s_forced_source == -1) || s_forced_source == ISFSHAX_CMD_SOURCE_SLC) {
         _check_superblock_source("slc:/sys/hax/installer/sblock.img", "slc:/sys/hax/installer/sblock.sha", SUPERBLOCK_FROM_SLC);
     }
 }
