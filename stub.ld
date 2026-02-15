@@ -20,6 +20,7 @@ __excstack_size = 0x40000;
 MEMORY {
 	sram0		: ORIGIN = 0xffff0000, LENGTH = 64K
 	mem2		: ORIGIN = 0x10100000, LENGTH = 60M
+	params  	: ORIGIN = 0xFFFFFF00, LENGTH = 256
 }
 
 SECTIONS
@@ -96,6 +97,11 @@ SECTIONS
 		__heap_end__ = (ORIGIN(mem2) + LENGTH(mem2));
 		. = __heap_end__;
 	} >mem2
+
+	.params :
+	{
+		*(.params)
+	} >params
 
 	/DISCARD/ :
 	{
