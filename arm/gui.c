@@ -22,6 +22,7 @@ static void main_install(menu_t *menu);
 static void main_uninstall(menu_t *menu);
 static void main_credits(menu_t *menu);
 
+static int gui_handle_automated_cmd(int *status);
 static int ask_confirmation(void);
 static void wait_continue(void);
 
@@ -57,50 +58,7 @@ void gui_main() {
     );
 
     if (memcmp(cmd->magic, ISFSHAX_CMD_MAGIC, 8) == 0) {
-        u32 command = cmd->command;
-        u32 parameter = cmd->parameter;
-        memset(cmd->magic, 0, 8);
-
-        int source = parameter & 0xFF;
-        int post_action = (parameter >> 30) & 0x3;
-
-        installer_set_source(source);
-
-        puts("\e[11;0H\e[0J\e[33mAutomated Command Execution\e[0m");
-        status = installer_check_compatibility();
-
-        int rc = -1;
-        if (command == ISFSHAX_CMD_INSTALL) {
-            if (status & ISFSHAX_INSTALL_POSSIBLE) {
-                rc = install_isfshax();
-            } else {
-                pr_error("Install not possible!\n");
-            }
-        } else if (command == ISFSHAX_CMD_UNINSTALL) {
-            if (status & ISFSHAX_REMOVAL_POSSIBLE) {
-                rc = uninstall_isfshax();
-            } else {
-                pr_error("Uninstall not possible!\n");
-            }
-        } else {
-            pr_error("Unknown command 0x%08X\n", command);
-        }
-
-        if (rc >= 0) {
-            if (post_action == ISFSHAX_CMD_POST_REBOOT) {
-                puts("Rebooting...");
-                udelay(2000000);
-                smc_shutdown(true);
-            } else if (post_action == ISFSHAX_CMD_POST_POWEROFF) {
-                puts("Powering off...");
-                udelay(2000000);
-                smc_shutdown(false);
-            }
-            // Refresh status for the menu
-            status = installer_check_compatibility();
-        }
-        installer_set_source(-1);
-        wait_continue();
+        gui_handle_automated_cmd(&status);
     } else {
         wait_continue();
 
@@ -156,6 +114,56 @@ static void main_uninstall(menu_t *menu) {
     }
 
     wait_continue();
+}
+
+static int gui_handle_automated_cmd(int *status) {
+    isfshax_cmd *cmd = (isfshax_cmd *)ISFSHAX_CMD_ADDR;
+    u32 command = cmd->command;
+    u32 parameter = cmd->parameter;
+    memset(cmd->magic, 0, 8);
+
+    int source = parameter & 0xFF;
+    int post_action = (parameter >> 30) & 0x3;
+
+    installer_set_source(source);
+
+    puts("\e[11;0H\e[0J\e[33mAutomated Command Execution\e[0m");
+    *status = installer_check_compatibility();
+
+    int rc = -1;
+    if (command == ISFSHAX_CMD_INSTALL) {
+        if (*status & ISFSHAX_INSTALL_POSSIBLE) {
+            rc = install_isfshax();
+        } else {
+            pr_error("Install not possible!\n");
+        }
+    } else if (command == ISFSHAX_CMD_UNINSTALL) {
+        if (*status & ISFSHAX_REMOVAL_POSSIBLE) {
+            rc = uninstall_isfshax();
+        } else {
+            pr_error("Uninstall not possible!\n");
+        }
+    } else {
+        pr_error("Unknown command 0x%08X\n", command);
+    }
+
+    if (rc >= 0) {
+        if (post_action == ISFSHAX_CMD_POST_REBOOT) {
+            puts("Rebooting...");
+            udelay(2000000);
+            smc_shutdown(true);
+        } else if (post_action == ISFSHAX_CMD_POST_POWEROFF) {
+            puts("Powering off...");
+            udelay(2000000);
+            smc_shutdown(false);
+        }
+        // Refresh status for the menu
+        *status = installer_check_compatibility();
+    }
+    installer_set_source(-1);
+    wait_continue();
+
+    return rc;
 }
 
 static void main_credits(menu_t *menu) {
